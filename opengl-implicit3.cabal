@@ -16,6 +16,8 @@ library
   hs-source-dirs:      src
   exposed-modules:     Voxel
   build-depends:       base >= 4.7 && < 5
+                     , OpenGL
+                     , GLUT
   default-language:    Haskell2010
   other-extensions:    ForeignFunctionInterface
   include-dirs:        C

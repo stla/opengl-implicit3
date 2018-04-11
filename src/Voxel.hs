@@ -1,9 +1,10 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 module Voxel
   where
+import Control.Monad ((=<<))
 import           Foreign.C.Types       
 -- import           Foreign.Marshal.Alloc (free, mallocBytes)
--- import           Foreign.Marshal.Array (peekArray, pokeArray)
+import           Foreign.Marshal.Array (peekArray)
 import           Foreign.Ptr           (FunPtr, Ptr, freeHaskellFunPtr)
 -- import           Foreign.Storable      (poke, peek, sizeOf)
 
@@ -38,3 +39,12 @@ voxel fun ((xm,xM),(ym,yM),(zm,zM)) n = do
                              (fromIntegral n)
     freeHaskellFunPtr funPtr
     return result
+
+triplePtr2tripleList :: (Ptr (Ptr (Ptr CDouble))) -> Int -> IO [[[CDouble]]]
+triplePtr2tripleList pppCDouble n = 
+    mapM (mapM (peekArray n)) =<< (mapM (peekArray n) =<< ((peekArray n) pppCDouble))
+
+voxelMax :: (Ptr (Ptr (Ptr CDouble))) -> Int -> IO CDouble
+voxelMax pppCDouble n = do 
+    tripleList <- triplePtr2tripleList pppCDouble n
+    return $ maximum (concat . concat $ tripleList)    
