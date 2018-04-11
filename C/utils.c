@@ -173,3 +173,19 @@ unsigned** kro2(unsigned** M, unsigned nx, unsigned ny, unsigned n){
     }
     return out;
 }
+
+unsigned* replicate(unsigned* x, unsigned* counts, unsigned n){
+    unsigned total = 0;
+    for(unsigned i=0; i<n; i++){
+        total += counts[i];
+    }
+    unsigned* out = malloc(total * sizeof(unsigned));
+    unsigned count = 0;
+    for(unsigned i=0; i<n; i++){
+        for(unsigned j=0; j<counts[i]; j++){
+            out[count] = x[i];
+            count++;
+        }
+    }
+    return out;
+}

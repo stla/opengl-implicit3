@@ -85,11 +85,8 @@ unsigned** GetBasic1(unsigned* R, unsigned nR, unsigned** vivjvk, unsigned n){ /
       }
   }
   unsigned** k1 = kro1(indexPtr, 8, 3, nR);
-  displayMatrix_u(k1, 8*nR, 3);
   unsigned** k2 = kro2(cube1, nR, 3, 8);
-  displayMatrix_u(k2, 8*nR, 3);
   unsigned** cubeco = matricialSum(k1, k2, 8*nR, 3);
-  displayMatrix_u(cubeco, 8*nR, 3);
   free(indexPtr); free(cube1); free(k1); free(k2);
   return cubeco;
 }
@@ -233,22 +230,6 @@ double** CalPoints(double** points, unsigned n){
     out[0] = x; out[1] = y; out[2] = z;
     // free(x);free(y);free(z); NON
     return(out);
-}
-
-unsigned* replicate(unsigned* x, unsigned* counts, unsigned n){
-    unsigned total = 0;
-    for(unsigned i=0; i<n; i++){
-        total += counts[i];
-    }
-    unsigned* out = malloc(total * sizeof(unsigned));
-    unsigned count = 0;
-    for(unsigned i=0; i<n; i++){
-        for(unsigned j=0; j<counts[i]; j++){
-            out[count] = x[i];
-            count++;
-        }
-    }
-    return out;
 }
 
 double** computeContour3d(
