@@ -14,12 +14,12 @@ unsigned** faceType(double** M, unsigned m, unsigned n, double level, double max
     unsigned** sum1 = matricialSum(minorMat, sminorMat2, m-1, n-1);
     unsigned** sum2 = matricialSum(sminorMat4, sminorMat8, m-1, n-1);
     unsigned** out = matricialSum(sum1, sum2, m-1, n-1);
-    freeMatrix(L,m);
-    freeMatrix(sminorMat2,m-1);
-    freeMatrix(sminorMat4,m-1);
-    freeMatrix(sminorMat8,m-1);
-    freeMatrix(sum1,m-1);
-    freeMatrix(sum2,m-1);
+    freeMatrix_u(L,m);
+    freeMatrix_u(sminorMat2,m-1);
+    freeMatrix_u(sminorMat4,m-1);
+    freeMatrix_u(sminorMat8,m-1);
+    freeMatrix_u(sum1,m-1);
+    freeMatrix_u(sum2,m-1);
     return out; 
 }
 
@@ -42,13 +42,13 @@ unsigned** levCells(double*** A, unsigned nx, unsigned ny, unsigned nz, double l
             cells[k][l] = goodcells01[0][l] + (nx-1)*(ny-1)*k + 1;
             types[k][l] = goodcells01[1][l];
         }
-        freeMatrix(bottomTypes, nx-1);
+        freeMatrix_u(bottomTypes, nx-1);
         unsigned** bottomTypes = copyMatrix(topTypes, nx-1, ny-1);
-        freeMatrix(topTypes, nx-1);
+        freeMatrix_u(topTypes, nx-1);
         lengths[k] = length;
         totallength += length;
-        freeMatrix(cellTypes, nx-1);
-        freeMatrix(goodcells01, 2);
+        freeMatrix_u(cellTypes, nx-1);
+        freeMatrix_u(goodcells01, 2);
     }
     unsigned** out = malloc(4 * sizeof(unsigned*));
     out[0] = malloc(totallength * sizeof(unsigned));
@@ -310,10 +310,10 @@ double** computeContour3d(
         double** triangles = CalPoints(points, totalLength);
         freeMatrix_d(points,8); 
         free(x1); free(x2);
-        freeMatrix(ijkt,4); 
-        freeMatrix(cubeco,3); 
+        freeMatrix_u(ijkt,4); 
+        freeMatrix_u(cubeco,3); 
         free(tcase); free(R);
-        freeMatrix(vivjvk,3); 
+        freeMatrix_u(vivjvk,3); 
         return triangles;
     }
 
