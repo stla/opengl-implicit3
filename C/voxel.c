@@ -4,7 +4,7 @@
 #endif
 
 double*** voxel(
-    double f(double, double, double),
+    double (*f)(double, double, double),
     double xmin,
     double xmax,
     double ymin,
@@ -21,7 +21,7 @@ double*** voxel(
             out[i][j] = malloc(n * sizeof(double));
             for(unsigned k=0; k<n; k++){
                 out[i][j][k] = 
-                  f(xmin + (xmax-xmin)*i/(n-1), ymin + (ymax-ymin)*j/(n-1), zmin + (zmax-zmin)*k/(n-1)); 
+                  (*f)(xmin + (xmax-xmin)*i/(n-1), ymin + (ymax-ymin)*j/(n-1), zmin + (zmax-zmin)*k/(n-1)); 
             }
         }
     }

@@ -3,6 +3,25 @@
 #include "marchingCubes.h"
 #endif
 
+void displayMatrix_u(unsigned** M, unsigned nx, unsigned ny){
+    for(unsigned i=0; i<nx; i++){
+        for(unsigned j=0; j<ny; j++){
+            printf("M[%u][%u]=%u ", i, j, M[i][j]);
+        }
+        printf("\n");
+    }
+}
+
+void displayMatrix(double** M, unsigned nx, unsigned ny){
+    for(unsigned i=0; i<nx; i++){
+        for(unsigned j=0; j<ny; j++){
+            printf("M[%u][%u]=%f ", i, j, M[i][j]);
+        }
+        printf("\n");
+    }
+}
+
+
 void freeMatrix_u(unsigned** M, unsigned nx){
     for(unsigned i=0; i<nx; i++){
         free(M[i]);
@@ -109,6 +128,7 @@ unsigned** whichIndicesAndItems(unsigned** M, unsigned m, unsigned n, unsigned* 
         }
     }
     *outlength = k;
+    // printf("k: %u\n", k);
     return out;
 }
 

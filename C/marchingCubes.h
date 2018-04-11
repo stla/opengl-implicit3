@@ -1,10 +1,15 @@
 #include <stdlib.h> // for malloc
+#include <stdio.h> // for printf
+
+void displayMatrix_u(unsigned**, unsigned, unsigned);
+
+void displayMatrix(double**, unsigned, unsigned);
 
 int CaseRotationFlip[256][3];
 
 unsigned indexArray[8][3];
 
-unsigned** Edges;
+//unsigned** Edges;
 
 unsigned edgesLengths[254];
 
@@ -64,4 +69,4 @@ double** CalPoints(double**, unsigned);
 
 double** computeContour3d(double***, unsigned, unsigned, unsigned, double, double, unsigned*);
 
-double*** voxel(double f(double, double, double), double, double, double, double, double, double, unsigned);
+double*** voxel(double (*f)(double, double, double), double, double, double, double, double, double, unsigned);

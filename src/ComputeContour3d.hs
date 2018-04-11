@@ -28,7 +28,7 @@ computeContour3d vox n voxmax level = do
     nrowsPtr <- mallocBytes (sizeOf (undefined :: CUInt))
     result <- c_computeContour3d vox n' n' n' (realToFrac max') (realToFrac level) nrowsPtr
     nrows <- peek nrowsPtr
-    --free nrowsPtr
+    free nrowsPtr
     return (result, fromIntegral nrows)
     where
     n' = fromIntegral n 
