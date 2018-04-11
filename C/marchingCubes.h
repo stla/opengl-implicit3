@@ -62,6 +62,6 @@ double** GetPoints(unsigned**, double*, unsigned*, unsigned*, unsigned*, unsigne
 
 double** CalPoints(double**, unsigned);
 
-double** computeContour3d(double***, unsigned, unsigned, unsigned, double, double);
+double** computeContour3d(double***, unsigned, unsigned, unsigned, double, double, unsigned*);
 
 double*** voxel(double f(double, double, double), double, double, double, double, double, double, unsigned);

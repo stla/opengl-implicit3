@@ -42,7 +42,8 @@ voxel fun ((xm,xM),(ym,yM),(zm,zM)) n = do
 
 triplePtr2tripleList :: (Ptr (Ptr (Ptr CDouble))) -> Int -> IO [[[CDouble]]]
 triplePtr2tripleList pppCDouble n = 
-    mapM (mapM (peekArray n)) =<< (mapM (peekArray n) =<< ((peekArray n) pppCDouble))
+    mapM (mapM (peekArray n')) =<< (mapM (peekArray n') =<< ((peekArray n') pppCDouble))
+    where n' = n-1
 
 voxelMax :: (Ptr (Ptr (Ptr CDouble))) -> Int -> IO CDouble
 voxelMax pppCDouble n = do 

@@ -3,7 +3,7 @@
 #include "marchingCubes.h"
 #endif
 #include <math.h>   // for floor - compile with flag -lm
-
+#include <stdio.h>
 
 unsigned** faceType(double** M, unsigned m, unsigned n, double level, double max){
     unsigned** L = levelMatrix(M, m, n, level, level<max);
@@ -236,13 +236,16 @@ double** computeContour3d(
     double*** voxel, 
     unsigned nx, unsigned ny, unsigned nz, 
     double max, 
-    double level)
+    double level,
+    unsigned* ntriangles)
 {
+    printf("START");
     unsigned nrow;
     unsigned** ijkt = levCells(voxel, nx, ny, nz, level, max, &nrow); 
     unsigned* tcase = get_tcase(ijkt[3], nrow);
     unsigned nR;
     unsigned* R = getR(tcase, nrow, &nR);
+    printf("nR: %u", nR);
     if(nR == 0){
         return 0;
     }else{
@@ -270,6 +273,7 @@ double** computeContour3d(
             edgeslengths[i] = edgesLengths[cases[i]];
             totalLength += edgeslengths[i];
         }
+        *ntriangles = totalLength;
         unsigned* p1rep = replicate(p1, edgeslengths, nR);
         unsigned edges[totalLength];
         unsigned edgeiter = 0;
