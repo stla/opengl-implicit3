@@ -283,8 +283,10 @@ size_t** faceType(double** M, unsigned m, unsigned n, double level, double max){
 unsigned** levCells(double*** A, unsigned nx, unsigned ny, unsigned nz, double level, double max, 
                     size_t* outnrow){
     // printf("nz: %u\n", nz);
-    unsigned* cells[nz-1];
-    unsigned* types[nz-1];
+    // unsigned* cells[nz-1];
+    // unsigned* types[nz-1];
+    unsigned** cells = malloc((nz-1) * sizeof(unsigned*));
+    unsigned** types = malloc((nz-1) * sizeof(unsigned*));    
     // printf("slice 0:\n");
     // displayMatrix(toMatrix(A, nx, ny, 0), nx, ny);
     size_t** bottomTypes = faceType(toMatrix(A, nx, ny, 0), nx, ny, level, max);
@@ -332,6 +334,8 @@ unsigned** levCells(double*** A, unsigned nx, unsigned ny, unsigned nz, double l
             count++;  
         }
     }
+    freeMatrix_u(cells, nz-1);
+    freeMatrix_u(types, nz-1);
     *outnrow = totallength;
     return out;
 }
@@ -441,13 +445,27 @@ double** GetPoints(size_t** cubeco, double* values, unsigned* p1, unsigned* x1,
         xx1[i] = (double) x1[i];
     }
     double** lambdamu = LambdaMu(xx1, n);
-    double v1[n]; double w1[n];
-    double v2[n]; double w2[n];
-    double v3[n]; double w3[n];
-    double v4[n]; double w4[n];
-    double v5[n]; double w5[n];
-    double v6[n]; double w6[n];
-    double v7[n]; double v8[n];
+    double* v1 = malloc(n * sizeof(double));
+    double* v2 = malloc(n * sizeof(double));
+    double* v3 = malloc(n * sizeof(double));
+    double* v4 = malloc(n * sizeof(double));
+    double* v5 = malloc(n * sizeof(double));
+    double* v6 = malloc(n * sizeof(double));
+    double* v7 = malloc(n * sizeof(double));
+    double* v8 = malloc(n * sizeof(double));
+    double* w1 = malloc(n * sizeof(double));
+    double* w2 = malloc(n * sizeof(double));
+    double* w3 = malloc(n * sizeof(double));
+    double* w4 = malloc(n * sizeof(double));
+    double* w5 = malloc(n * sizeof(double));
+    double* w6 = malloc(n * sizeof(double));
+    // double v1[n]; double w1[n];
+    // double v2[n]; double w2[n];
+    // double v3[n]; double w3[n];
+    // double v4[n]; double w4[n];
+    // double v5[n]; double w5[n];
+    // double v6[n]; double w6[n];
+    // double v7[n]; double v8[n];
     for(size_t i=0; i<n; i++){
         v1[i] = (double) cubeco[p1x1[i]-2][0];
         w1[i] = (double) cubeco[p1[i]-1][0];
@@ -476,6 +494,8 @@ double** GetPoints(size_t** cubeco, double* values, unsigned* p1, unsigned* x1,
     out[6] = average7(lambdamu, v7, n);
     out[7] = average8(lambdamu, v8, n); 
     freeMatrix_d(lambdamu,2);
+    free(v1); free(v2); free(v3); free(v4); free(v5); free(v6); free(v7); free(v8); 
+    free(w1); free(w2); free(w3); free(w4); free(w5); free(w6);
     return(out);
 }
 

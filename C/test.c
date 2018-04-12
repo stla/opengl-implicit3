@@ -7,10 +7,14 @@ double f(double x, double y, double z){
     return x*x + y*y + z*z;
 }
 
+
 int main(){
-    double*** vxl = voxel(&f, -2, 2, -2, 2, -2, 2, 5, 5, 5);
+    unsigned n = 150;
+    double*** vxl = voxel(&f, -2, 2, -2, 2, -2, 2, n, n, n);
+    printf("vxl done\n");
     size_t ntriangles;
-    double** contour = computeContour3d(vxl, 5, 5, 5, 12, 1, &ntriangles);
+    double** contour = computeContour3d(vxl, n, n, n, 12, 1, &ntriangles);
+    freeArray(vxl, n, n);
     printf("nrows: %zu\n", ntriangles);
     return 0;
 }
