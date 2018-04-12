@@ -1,3 +1,8 @@
+#ifndef __HEADER__
+#define __HEADER__
+#include "marchingCubes.h"
+#endif
+
 int CaseRotationFlip[256][3] =  
 {{1, 24, 1},
  {2, 19, 1},
@@ -256,7 +261,7 @@ int CaseRotationFlip[256][3] =
  {2, 19, -1},
  {1, 24, -1}};
 
-unsigned indexArray[8][3] =
+size_t indexArray[8][3] =
 {{0, 0, 0},
  {1, 0, 0},
  {1, 1, 0},

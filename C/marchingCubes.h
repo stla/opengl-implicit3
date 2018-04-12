@@ -7,7 +7,7 @@ void displayMatrix(double**, unsigned, unsigned);
 
 int CaseRotationFlip[256][3];
 
-unsigned indexArray[8][3];
+size_t indexArray[8][3];
 
 //unsigned** Edges;
 
@@ -17,56 +17,58 @@ unsigned EdgePoints[13][3];
 
 void freeMatrix_u(unsigned**, unsigned);
 
+void freeMatrix_s(size_t**, unsigned);
+
 void freeMatrix_d(double**, unsigned);
 
 unsigned** copyMatrix(unsigned**, unsigned, unsigned);
 
-unsigned** minorMatrix(unsigned**, unsigned, unsigned, unsigned, unsigned);
+size_t** minorMatrix(size_t**, unsigned, unsigned, unsigned, unsigned);
 
-unsigned** scaleMatrix(unsigned, unsigned**, unsigned, unsigned);
+size_t** scaleMatrix(size_t, size_t**, unsigned, unsigned);
 
-unsigned** scaleMinorMatrix(unsigned, unsigned**, unsigned, unsigned, unsigned, unsigned);
+size_t** scaleMinorMatrix(size_t, size_t**, unsigned, unsigned, unsigned, unsigned);
 
-unsigned** matricialSum(unsigned**, unsigned**, unsigned, unsigned);
+size_t** matricialSum(size_t**, size_t**, unsigned, unsigned);
 
-unsigned** levelMatrix(double**, unsigned, unsigned, double, unsigned);
+size_t** levelMatrix(double**, unsigned, unsigned, double, unsigned);
 
 double** toMatrix(double***, unsigned, unsigned, unsigned);
 
-unsigned** whichIndicesAndItems(unsigned**, unsigned, unsigned, unsigned*);
+unsigned** whichIndicesAndItems(size_t**, unsigned, unsigned, unsigned*);
 
 void freeArray(double***, unsigned, unsigned);
 
-unsigned** kro1(unsigned**, unsigned, unsigned, unsigned);
+size_t** kro1(size_t**, unsigned, unsigned, unsigned);
 
-unsigned** kro2(unsigned**, unsigned, unsigned, unsigned);
+size_t** kro2(size_t**, unsigned, unsigned, unsigned);
 
 unsigned* replicate(unsigned*, unsigned*, unsigned);
 
-unsigned** faceType(double**, unsigned, unsigned, double, double);
+size_t** faceType(double**, unsigned, unsigned, double, double);
 
-unsigned** levCells(double***, unsigned, unsigned, unsigned, double, double, unsigned*);
+unsigned** levCells(double***, unsigned, unsigned, unsigned, double, double, size_t*);
 
-unsigned** GetBasic1(unsigned*, unsigned, unsigned**, unsigned);
+size_t** GetBasic1(unsigned*, unsigned, size_t**, unsigned);
 
-double* GetBasic2(double***, double, unsigned*, unsigned, unsigned**);
+double* GetBasic2(double***, double, unsigned*, unsigned, size_t**);
 
-unsigned* get_tcase(unsigned*, unsigned);
+unsigned* get_tcase(unsigned*, size_t);
 
-unsigned* getR(unsigned*, unsigned, unsigned*);
+unsigned* getR(unsigned*, size_t, unsigned*);
 
-double** LambdaMu(double*, unsigned);
+double** LambdaMu(double*, size_t);
 
-double* average(double**, double*, double*, unsigned);
+double* average(double**, double*, double*, size_t);
 
-double* average7(double**, double*, unsigned);
+double* average7(double**, double*, size_t);
 
-double* average8(double**, double*, unsigned);
+double* average8(double**, double*, size_t);
 
-double** GetPoints(unsigned**, double*, unsigned*, unsigned*, unsigned*, unsigned);
+double** GetPoints(size_t**, double*, unsigned*, unsigned*, unsigned*, size_t);
 
-double** CalPoints(double**, unsigned);
+double** CalPoints(double**, size_t);
 
-double** computeContour3d(double***, unsigned, unsigned, unsigned, double, double, unsigned*);
+double** computeContour3d(double***, unsigned, unsigned, unsigned, double, double, size_t*);
 
 double*** voxel(double (*f)(double, double, double), double, double, double, double, double, double, unsigned);
