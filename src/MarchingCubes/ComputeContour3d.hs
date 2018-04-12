@@ -9,7 +9,7 @@ import           Foreign.Marshal.Array (peekArray)
 import           Foreign.Ptr (Ptr)
 import Foreign.Storable (peek, sizeOf)
 import MarchingCubes.Voxel
-import Data.Maybe
+-- import Data.Maybe
 import Data.List.Split (chunksOf)
 import Data.List (transpose)
 import Data.Tuple.Extra (fst3, snd3, thd3)
@@ -40,8 +40,9 @@ foreign import ccall "xcomputeContour3d" c_computeContour3d
 computeContour3d :: Voxel -> Maybe Double -> Double 
                  -> IO ((Ptr (Ptr CDouble)), Int)
 computeContour3d voxel voxmax level = do
-    voxelmax <- voxelMax voxel
-    let max' = fromMaybe (realToFrac $ voxelmax) voxmax
+    max' <- maybe (voxelMax voxel) return voxmax
+    -- voxelmax <- voxelMax voxel
+    -- let max' = fromMaybe (realToFrac $ voxelmax) voxmax
     let (_, (nx,ny,nz), _) = voxel 
     nrowsPtr <- mallocBytes (sizeOf (undefined :: CSize))
     result <- c_computeContour3d (fst3 voxel) 

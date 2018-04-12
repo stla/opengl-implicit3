@@ -50,10 +50,10 @@ voxel2tripleList (pppCDouble, (nx,ny,nz), _) =
     mapM (mapM (peekArray nz)) =<< (mapM (peekArray ny) =<< ((peekArray nx) pppCDouble))
     --- where n' = n-1
 
-voxelMax :: Voxel -> IO CDouble
+voxelMax :: Voxel -> IO Double
 voxelMax voxel = do 
     tripleList <- voxel2tripleList voxel
-    return $ maximum (concat . concat $ tripleList)    
+    return $ realToFrac $ maximum (concat . concat $ tripleList)    
 
 test_fVoxel :: (Double,Double,Double) -> Double
 test_fVoxel (x,y,z) = x+y+z
