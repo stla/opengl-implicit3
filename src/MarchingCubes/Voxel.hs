@@ -13,9 +13,9 @@ type Voxel = (Ptr (Ptr (Ptr CDouble)), (Int,Int,Int), ((Double,Double),(Double,D
 
 type CFunction = CDouble -> CDouble -> CDouble -> IO CDouble
 
-foreign import ccall safe "wrapper" functionPtr :: CFunction -> IO (FunPtr CFunction)
+foreign import ccall "wrapper" functionPtr :: CFunction -> IO (FunPtr CFunction)
 
-foreign import ccall safe "voxel" c_voxel
+foreign import ccall "voxel" c_voxel
     :: FunPtr CFunction
     -> CDouble
     -> CDouble

@@ -1,6 +1,6 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 module MarchingCubes.ComputeContour3d
-  (computeContour3d', computeContour3d'', XYZ, Triangle)
+  (computeContour3d, computeContour3d', computeContour3d'', XYZ, Triangle)
   where
 import Control.Monad ((=<<), when)
 import           Foreign.C.Types       
@@ -27,7 +27,7 @@ toTriangles trianglesAsList = map toTriangle (chunksOf 3 trianglesAsList)
       toTriplet _       = undefined
     
 
-foreign import ccall unsafe "computeContour3d" c_computeContour3d
+foreign import ccall "computeContour3d" c_computeContour3d
     :: (Ptr (Ptr (Ptr CDouble)))
     -> CUInt
     -> CUInt
