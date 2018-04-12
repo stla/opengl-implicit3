@@ -27,7 +27,7 @@ toTriangles trianglesAsList = map toTriangle (chunksOf 3 trianglesAsList)
       toTriplet _       = undefined
     
 
-foreign import ccall "computeContour3d" c_computeContour3d
+foreign import ccall "xcomputeContour3d" c_computeContour3d
     :: (Ptr (Ptr (Ptr CDouble)))
     -> CUInt
     -> CUInt
@@ -42,6 +42,7 @@ computeContour3d :: Voxel -> Maybe Double -> Double
 computeContour3d voxel voxmax level = do
     voxelmax <- voxelMax voxel
     let max' = fromMaybe (realToFrac $ voxelmax) voxmax
+    let (_, (nx,ny,nz), _) = voxel 
     nrowsPtr <- mallocBytes (sizeOf (undefined :: CSize))
     result <- c_computeContour3d (fst3 voxel) 
               (fromIntegral nx) (fromIntegral ny) (fromIntegral nz) 
@@ -49,8 +50,6 @@ computeContour3d voxel voxmax level = do
     nrows <- peek nrowsPtr
     free nrowsPtr
     return (result, fromIntegral nrows)
-    where
-    (_, (nx,ny,nz), _) = voxel 
 
 computeContour3d' :: Voxel -> Maybe Double -> Double 
                   -> IO [Triangle]

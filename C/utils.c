@@ -28,8 +28,8 @@ void freeMatrix_u(unsigned** M, unsigned nx){
     free(M);
 }
 
-void freeMatrix_s(size_t** M, unsigned nx){
-    for(unsigned i=0; i<nx; i++){
+void freeMatrix_s(size_t** M, size_t nx){
+    for(size_t i=0; i<nx; i++){
         free(M[i]);
     }
     free(M);
@@ -84,9 +84,9 @@ size_t** scaleMinorMatrix(size_t k, size_t** M, unsigned m, unsigned n, unsigned
     return out;
 }
 
-size_t** matricialSum(size_t** M1, size_t** M2, unsigned m, unsigned n){
+size_t** matricialSum(size_t** M1, size_t** M2, size_t m, unsigned n){
     size_t** out = malloc(m * sizeof(size_t*));
-    for(unsigned i=0; i<m; i++){
+    for(size_t i=0; i<m; i++){
         out[i] = malloc(n * sizeof(size_t));
         for(unsigned j=0; j<n; j++){
             out[i][j] = M1[i][j] + M2[i][j];
@@ -162,9 +162,9 @@ void freeArray(double*** A, unsigned nx, unsigned ny){
     free(A);
 }
 
-size_t** kro1(size_t** M, unsigned nx, unsigned ny, unsigned n){
+size_t** kro1(size_t** M, unsigned nx, unsigned ny, size_t n){
     size_t** out = malloc((nx*n+1) * sizeof(size_t*));
-    for(unsigned i=0; i<nx*n; i++){
+    for(size_t i=0; i<nx*n; i++){
         out[i] = malloc(ny * sizeof(size_t));
         for(unsigned j=0; j<ny; j++){
             out[i][j] = M[i%nx][j];
@@ -177,17 +177,17 @@ size_t** kro1(size_t** M, unsigned nx, unsigned ny, unsigned n){
     return out;
 }
 
-size_t** kro2(size_t** M, unsigned nx, unsigned ny, unsigned n){
+size_t** kro2(size_t** M, size_t nx, unsigned ny, unsigned n){
     size_t** out = malloc((nx*n+1) * sizeof(size_t*));
     unsigned replicates[nx*n+1];
     unsigned count = 0;
-    for(unsigned i=0; i<nx; i++){
+    for(size_t i=0; i<nx; i++){
         for(unsigned m=0; m<n; m++){
             replicates[count] = i;
             count++;
         }
     }
-    for(unsigned i=0; i<nx*n; i++){
+    for(size_t i=0; i<nx*n; i++){
         out[i] = malloc(ny * sizeof(size_t));
         for(unsigned j=0; j<ny; j++){
             out[i][j] = M[replicates[i]][j];
@@ -200,14 +200,14 @@ size_t** kro2(size_t** M, unsigned nx, unsigned ny, unsigned n){
     return out;
 }
 
-unsigned* replicate(unsigned* x, unsigned* counts, unsigned n){
+size_t* replicate(size_t* x, unsigned* counts, size_t n){
     unsigned total = 0;
-    for(unsigned i=0; i<n; i++){
+    for(size_t i=0; i<n; i++){
         total += counts[i];
     }
-    unsigned* out = malloc(total * sizeof(unsigned));
+    size_t* out = malloc(total * sizeof(size_t));
     unsigned count = 0;
-    for(unsigned i=0; i<n; i++){
+    for(size_t i=0; i<n; i++){
         for(unsigned j=0; j<counts[i]; j++){
             out[count] = x[i];
             count++;

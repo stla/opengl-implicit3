@@ -261,6 +261,31 @@ unsigned edgesRow252[] = {1, 2, 10};
 unsigned edgesRow253[] = {4, 1, 9};
 unsigned (*Edges[])[] = {&edgesRow0, &edgesRow1, &edgesRow2, &edgesRow3, &edgesRow4, &edgesRow5, &edgesRow6, &edgesRow7, &edgesRow8, &edgesRow9, &edgesRow10, &edgesRow11, &edgesRow12, &edgesRow13, &edgesRow14, &edgesRow15, &edgesRow16, &edgesRow17, &edgesRow18, &edgesRow19, &edgesRow20, &edgesRow21, &edgesRow22, &edgesRow23, &edgesRow24, &edgesRow25, &edgesRow26, &edgesRow27, &edgesRow28, &edgesRow29, &edgesRow30, &edgesRow31, &edgesRow32, &edgesRow33, &edgesRow34, &edgesRow35, &edgesRow36, &edgesRow37, &edgesRow38, &edgesRow39, &edgesRow40, &edgesRow41, &edgesRow42, &edgesRow43, &edgesRow44, &edgesRow45, &edgesRow46, &edgesRow47, &edgesRow48, &edgesRow49, &edgesRow50, &edgesRow51, &edgesRow52, &edgesRow53, &edgesRow54, &edgesRow55, &edgesRow56, &edgesRow57, &edgesRow58, &edgesRow59, &edgesRow60, &edgesRow61, &edgesRow62, &edgesRow63, &edgesRow64, &edgesRow65, &edgesRow66, &edgesRow67, &edgesRow68, &edgesRow69, &edgesRow70, &edgesRow71, &edgesRow72, &edgesRow73, &edgesRow74, &edgesRow75, &edgesRow76, &edgesRow77, &edgesRow78, &edgesRow79, &edgesRow80, &edgesRow81, &edgesRow82, &edgesRow83, &edgesRow84, &edgesRow85, &edgesRow86, &edgesRow87, &edgesRow88, &edgesRow89, &edgesRow90, &edgesRow91, &edgesRow92, &edgesRow93, &edgesRow94, &edgesRow95, &edgesRow96, &edgesRow97, &edgesRow98, &edgesRow99, &edgesRow100, &edgesRow101, &edgesRow102, &edgesRow103, &edgesRow104, &edgesRow105, &edgesRow106, &edgesRow107, &edgesRow108, &edgesRow109, &edgesRow110, &edgesRow111, &edgesRow112, &edgesRow113, &edgesRow114, &edgesRow115, &edgesRow116, &edgesRow117, &edgesRow118, &edgesRow119, &edgesRow120, &edgesRow121, &edgesRow122, &edgesRow123, &edgesRow124, &edgesRow125, &edgesRow126, &edgesRow127, &edgesRow128, &edgesRow129, &edgesRow130, &edgesRow131, &edgesRow132, &edgesRow133, &edgesRow134, &edgesRow135, &edgesRow136, &edgesRow137, &edgesRow138, &edgesRow139, &edgesRow140, &edgesRow141, &edgesRow142, &edgesRow143, &edgesRow144, &edgesRow145, &edgesRow146, &edgesRow147, &edgesRow148, &edgesRow149, &edgesRow150, &edgesRow151, &edgesRow152, &edgesRow153, &edgesRow154, &edgesRow155, &edgesRow156, &edgesRow157, &edgesRow158, &edgesRow159, &edgesRow160, &edgesRow161, &edgesRow162, &edgesRow163, &edgesRow164, &edgesRow165, &edgesRow166, &edgesRow167, &edgesRow168, &edgesRow169, &edgesRow170, &edgesRow171, &edgesRow172, &edgesRow173, &edgesRow174, &edgesRow175, &edgesRow176, &edgesRow177, &edgesRow178, &edgesRow179, &edgesRow180, &edgesRow181, &edgesRow182, &edgesRow183, &edgesRow184, &edgesRow185, &edgesRow186, &edgesRow187, &edgesRow188, &edgesRow189, &edgesRow190, &edgesRow191, &edgesRow192, &edgesRow193, &edgesRow194, &edgesRow195, &edgesRow196, &edgesRow197, &edgesRow198, &edgesRow199, &edgesRow200, &edgesRow201, &edgesRow202, &edgesRow203, &edgesRow204, &edgesRow205, &edgesRow206, &edgesRow207, &edgesRow208, &edgesRow209, &edgesRow210, &edgesRow211, &edgesRow212, &edgesRow213, &edgesRow214, &edgesRow215, &edgesRow216, &edgesRow217, &edgesRow218, &edgesRow219, &edgesRow220, &edgesRow221, &edgesRow222, &edgesRow223, &edgesRow224, &edgesRow225, &edgesRow226, &edgesRow227, &edgesRow228, &edgesRow229, &edgesRow230, &edgesRow231, &edgesRow232, &edgesRow233, &edgesRow234, &edgesRow235, &edgesRow236, &edgesRow237, &edgesRow238, &edgesRow239, &edgesRow240, &edgesRow241, &edgesRow242, &edgesRow243, &edgesRow244, &edgesRow245, &edgesRow246, &edgesRow247, &edgesRow248, &edgesRow249, &edgesRow250, &edgesRow251, &edgesRow252, &edgesRow253};
 
+size_t indexArray[8][3] =
+{{0, 0, 0},
+ {1, 0, 0},
+ {1, 1, 0},
+ {0, 1, 0},
+ {0, 0, 1},
+ {1, 0, 1},
+ {1, 1, 1},
+ {0, 1, 1}};
+
+unsigned EdgePoints[13][3] = 
+{{1, 1, 2},
+ {2, 2, 3},
+ {3, 3, 4},
+ {4, 4, 1},
+ {5, 5, 6},
+ {6, 6, 7},
+ {7, 7, 8},
+ {8, 8, 5},
+ {9, 1, 5},
+ {10, 2, 6},
+ {11, 3, 7},
+ {12, 4, 8},
+ {13, 9, 9}};
+
 
 size_t** faceType(double** M, unsigned m, unsigned n, double level, double max){
     size_t** L = levelMatrix(M, m, n, level, level<max);
@@ -282,25 +307,25 @@ size_t** faceType(double** M, unsigned m, unsigned n, double level, double max){
 
 unsigned** levCells(double*** A, unsigned nx, unsigned ny, unsigned nz, double level, double max, 
                     size_t* outnrow){
-    // printf("nz: %u\n", nz);
+    // //printf("nz: %u\n", nz);
     // unsigned* cells[nz-1];
     // unsigned* types[nz-1];
     unsigned** cells = malloc((nz-1) * sizeof(unsigned*));
     unsigned** types = malloc((nz-1) * sizeof(unsigned*));    
-    // printf("slice 0:\n");
+    // //printf("slice 0:\n");
     // displayMatrix(toMatrix(A, nx, ny, 0), nx, ny);
     size_t** bottomTypes = faceType(toMatrix(A, nx, ny, 0), nx, ny, level, max);
-    // printf("bottomTypes:\n");
+    // //printf("bottomTypes:\n");
     // displayMatrix_u(bottomTypes, nx-1, ny-1);
     size_t totallength = 0;
     unsigned lengths[nz-1];
     for(unsigned k=0; k<nz-1; k++){
         size_t** topTypes = faceType(toMatrix(A, nx, ny, k+1), nx, ny, level, max);
-        // printf("topTypes:\n");
+        // //printf("topTypes:\n");
         // displayMatrix_u(topTypes, nx-1, ny-1);
         size_t** cellTypes = 
             matricialSum(bottomTypes, scaleMatrix(16, topTypes, nx-1, ny-1), nx-1, ny-1);
-        // printf("cellTypes:\n");
+        // //printf("cellTypes:\n");
         // displayMatrix_u(cellTypes, nx-1, ny-1);
         unsigned length;
         unsigned** goodcells01 = whichIndicesAndItems(cellTypes, nx-1, ny-1, &length);
@@ -340,8 +365,8 @@ unsigned** levCells(double*** A, unsigned nx, unsigned ny, unsigned nz, double l
     return out;
 }
 
-size_t** GetBasic1(unsigned* R, unsigned nR, size_t** vivjvk, unsigned n){ // n = nrow(vivjvk) - not used ?
-  size_t** indexPtr = malloc(8 * sizeof(unsigned*));
+size_t** GetBasic1(unsigned* R, size_t nR, size_t** vivjvk, unsigned n){ // n = nrow(vivjvk) - not used ?
+  size_t** indexPtr = malloc(8 * sizeof(size_t*));
   for(unsigned i=0; i<8; i++){
       indexPtr[i] = malloc(3 * sizeof(size_t));
       for(unsigned j=0; j<3; j++){
@@ -349,7 +374,7 @@ size_t** GetBasic1(unsigned* R, unsigned nR, size_t** vivjvk, unsigned n){ // n 
       }
   }
   size_t** cube1 = malloc(nR * sizeof(size_t*));
-  for(unsigned i=0; i<nR; i++){
+  for(size_t i=0; i<nR; i++){
       cube1[i] = malloc(3 * sizeof(size_t));
       for(unsigned j=0; j<3; j++){
           cube1[i][j] = vivjvk[R[i]][j];
@@ -365,10 +390,10 @@ size_t** GetBasic1(unsigned* R, unsigned nR, size_t** vivjvk, unsigned n){ // n 
   return cubeco;
 }
 
-double* GetBasic2(double*** A, double level, unsigned* R, unsigned nR, size_t** vivjvk){
+double* GetBasic2(double*** A, double level, unsigned* R, size_t nR, size_t** vivjvk){
     size_t** cubeco = GetBasic1(R, nR, vivjvk, 999); // 999 useless ?
     double* values = malloc((8*nR+1)*sizeof(double));
-    for(unsigned i=0; i<8*nR; i++){
+    for(size_t i=0; i<8*nR; i++){
         values[i] = A[cubeco[i][0]-1][cubeco[i][1]-1][cubeco[i][2]-1] - level;
     }
     values[8*nR] = 0;
@@ -376,23 +401,46 @@ double* GetBasic2(double*** A, double level, unsigned* R, unsigned nR, size_t** 
     return values;
 }
 
+
+
 unsigned* get_tcase(unsigned* types, size_t nrow){
+    unsigned CRF[256] = {1, 2, 2, 3, 2, 4, 3, 6, 2, 3, 4, 6, 3, 6, 6, 9, 2, 3, 4, 6, 
+    5, 7, 7, 12, 4, 6, 8, 10, 7, 15, 13, 6, 2, 4, 3, 6, 4, 8, 6, 
+    10, 5, 7, 7, 15, 7, 13, 12, 6, 3, 6, 6, 9, 7, 13, 15, 6, 7, 12, 
+    13, 6, 11, 7, 7, 3, 2, 5, 4, 7, 3, 7, 6, 15, 4, 7, 8, 13, 6, 
+    12, 10, 6, 4, 7, 8, 13, 7, 11, 13, 7, 8, 13, 14, 8, 13, 7, 8, 
+    4, 3, 7, 6, 12, 6, 13, 9, 6, 7, 11, 13, 7, 15, 7, 6, 3, 6, 15, 
+    10, 6, 12, 7, 6, 3, 13, 7, 8, 4, 7, 5, 4, 2, 2, 4, 5, 7, 4, 8, 
+    7, 13, 3, 6, 7, 12, 6, 10, 15, 6, 3, 6, 7, 15, 7, 13, 11, 7, 
+    6, 9, 13, 6, 12, 6, 7, 3, 4, 8, 7, 13, 8, 14, 13, 8, 7, 13, 11, 
+    7, 13, 8, 7, 4, 6, 10, 12, 6, 13, 8, 7, 4, 15, 6, 7, 3, 7, 4, 
+    5, 2, 3, 7, 7, 11, 6, 13, 12, 7, 6, 15, 13, 7, 9, 6, 6, 3, 6, 
+    12, 13, 7, 15, 7, 7, 5, 10, 6, 8, 4, 6, 3, 4, 2, 6, 13, 15, 7, 
+    10, 8, 6, 4, 12, 7, 7, 5, 6, 4, 3, 2, 9, 6, 6, 3, 6, 4, 3, 2, 
+    6, 3, 4, 2, 3, 2, 2, 1};
     unsigned* out = malloc(nrow * sizeof(unsigned));
     for(size_t i=0; i<nrow; i++){
-        out[i] = CaseRotationFlip[types[i]][0]-1;
+        //printf("types[i]=%u\n", types[i]);
+        out[i] = CRF[types[i]]-1;
     }
     return out;
 } 
 
-unsigned* getR(unsigned* tcase, size_t nrow, unsigned* nR){
+unsigned* getR(unsigned* tcase, size_t nrow, size_t* nR){
     unsigned* out = malloc(nrow * sizeof(unsigned));
-    *nR=0;
+    size_t count=0;
     for(size_t i=0; i<nrow; i++){
+        ////printf("in loop\n");
+        ////printf("tcase[%zu]=%u\n", i, tcase[i]);
         if(tcase[i]==1 || tcase[i]==2 || tcase[i]==5 || tcase[i]==8 || tcase[i]==9 || tcase[i]==11 || tcase[i]==14){
-            out[*nR] = i;
-            (*nR)++;
+            out[count] = (unsigned) i;
+            count++;
+            //printf("tcase matched\n");
         }
+        ////printf("end if\n");
     }
+    ////printf("end loop");
+    *nR = count;
     return(out);
 }
 
@@ -434,7 +482,7 @@ double* average8(double** lambdamu, double* w, size_t n){
     return out;    
 }
 
-double** GetPoints(size_t** cubeco, double* values, unsigned* p1, unsigned* x1, 
+double** GetPoints(size_t** cubeco, double* values, size_t* p1, unsigned* x1, 
                    unsigned* x2, size_t n){
     unsigned* p1x1 = malloc(n * sizeof(unsigned));
     unsigned* p1x2 = malloc(n * sizeof(unsigned));
@@ -523,25 +571,44 @@ double** CalPoints(double** points, size_t n){
     return(out);
 }
 
-double** computeContour3d(
+
+double** xcomputeContour3d(
     double*** voxel, 
     unsigned nx, unsigned ny, unsigned nz, 
     double max, 
     double level,
     size_t* ntriangles)
 {
-    // printf("START");
+    unsigned edgesLengths[254] =   {3, 3, 6, 3, 0, 6, 9, 3, 6, 0, 9, 6, 9, 9, 6, 3, 6, 0, 9, 0, 
+                                0, 0, 12, 0, 9, 0, 12, 0, 12, 0, 9, 3, 0, 6, 9, 0, 0, 9, 12, 
+                                0, 0, 0, 12, 0, 0, 12, 9, 6, 9, 9, 6, 0, 0, 12, 9, 0, 12, 0, 
+                                9, 0, 0, 0, 6, 3, 0, 0, 0, 6, 0, 9, 12, 0, 0, 0, 0, 9, 12, 12, 
+                                9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 9, 12, 
+                                9, 0, 6, 9, 0, 0, 0, 0, 12, 0, 9, 6, 9, 12, 12, 9, 12, 0, 9, 
+                                6, 0, 0, 0, 0, 0, 0, 0, 3, 3, 0, 0, 0, 0, 0, 0, 0, 6, 9, 0, 12, 
+                                9, 12, 12, 9, 6, 9, 0, 12, 0, 0, 0, 0, 9, 6, 0, 9, 12, 9, 0, 
+                                6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 12, 12, 
+                                9, 0, 0, 0, 0, 12, 9, 0, 6, 0, 0, 0, 3, 6, 0, 0, 0, 9, 0, 12, 
+                                0, 9, 12, 0, 0, 6, 9, 9, 6, 9, 12, 0, 0, 12, 0, 0, 0, 12, 9, 
+                                0, 0, 9, 6, 0, 3, 9, 0, 12, 0, 12, 0, 9, 0, 12, 0, 0, 0, 9, 0, 
+                                6, 3, 6, 9, 9, 6, 9, 0, 6, 3, 9, 6, 0, 3, 6, 3, 3};
+
+    //ntriangles = malloc(sizeof(size_t));
+    //printf("START");
     size_t nrow;
     unsigned** ijkt = levCells(voxel, nx, ny, nz, level, max, &nrow); 
+    //printf("ijkt[3][0]=%u\n", ijkt[3][0]);
     unsigned* tcase = get_tcase(ijkt[3], nrow);
-    // printf("nrow: %u\n", nrow);
-    unsigned nR;
+    //printf("tcase[0]=%u\n", tcase[0]);
+    //printf("nrow: %zu\n", nrow);
+    size_t nR;
     unsigned* R = getR(tcase, nrow, &nR);
-    // printf("nR: %u", nR);
+    //printf("getR done");
+    //printf("nR: %zu", nR);
     if(nR == 0){
         return 0;
     }else{
-        size_t** vivjvk = malloc(nrow * sizeof(unsigned*));
+        size_t** vivjvk = malloc(nrow * sizeof(size_t*));
         for(size_t i=0; i<nrow; i++){
             vivjvk[i] = malloc(3 * sizeof(size_t));
             for(unsigned j=0; j<3; j++){
@@ -550,26 +617,28 @@ double** computeContour3d(
         }
         size_t** cubeco = GetBasic1(R, nR, vivjvk, 99999999);
         double* values = GetBasic2(voxel, level, R, nR, vivjvk);
-        unsigned* p1 = malloc(nR * sizeof(unsigned));
-        for(unsigned i=0; i<nR; i++){
+        size_t* p1 = malloc(nR * sizeof(size_t));
+        for(size_t i=0; i<nR; i++){
             p1[i] = i*8 + 1; // -1 ou pas ?
         }
         unsigned* vt = ijkt[3];
         unsigned* cases = malloc(nR * sizeof(unsigned));
-        for(unsigned i=0; i<nR; i++){
+        for(size_t i=0; i<nR; i++){
             cases[i] = vt[R[i]]-1; // -1 ou pas ?
         }
         unsigned edgeslengths[nR];
         size_t totalLength = 0;
-        for(unsigned i=0; i<nR; i++){
+        for(size_t i=0; i<nR; i++){
+            //printf("cases[%zu]=%u",i,cases[i]);
             edgeslengths[i] = edgesLengths[cases[i]];
             totalLength += (size_t) edgeslengths[i];
         }
+        //printf("totalLength: %zu", totalLength);
         *ntriangles = totalLength;
-        unsigned* p1rep = replicate(p1, edgeslengths, nR);
+        size_t* p1rep = replicate(p1, edgeslengths, nR);
         size_t edges[totalLength];
         size_t edgeiter = 0;
-        for(unsigned i=0; i<nR; i++){
+        for(size_t i=0; i<nR; i++){
             for(unsigned j=0; j<edgeslengths[i]; j++){
                 edges[edgeiter] = (size_t) (*Edges[cases[i]])[j];
                 edgeiter++;
@@ -582,7 +651,7 @@ double** computeContour3d(
             x2[i] = EdgePoints[edges[i]-1][2];
         }
         double** points = GetPoints(cubeco, values, p1rep, x1, x2, totalLength);
-        // printf("totalLength: %u\n", totalLength);
+        // //printf("totalLength: %u\n", totalLength);
         double** triangles = CalPoints(points, totalLength);
         freeMatrix_d(points,8); 
         free(x1); free(x2);
