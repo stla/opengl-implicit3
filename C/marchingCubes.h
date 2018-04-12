@@ -71,4 +71,6 @@ double** CalPoints(double**, size_t);
 
 double** computeContour3d(double***, unsigned, unsigned, unsigned, double, double, size_t*);
 
-double*** voxel(double (*f)(double, double, double), double, double, double, double, double, double, unsigned);
+double*** voxel(double (*f)(double, double, double), 
+                double, double, double, double, double, double, 
+                unsigned, unsigned, unsigned);

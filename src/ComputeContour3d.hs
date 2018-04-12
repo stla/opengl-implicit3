@@ -17,25 +17,27 @@ foreign import ccall unsafe "computeContour3d" c_computeContour3d
     -> CUInt
     -> CDouble
     -> CDouble
-    -> Ptr CUInt
+    -> Ptr CSize
     -> IO (Ptr (Ptr CDouble))
 
-computeContour3d :: (Ptr (Ptr (Ptr CDouble))) -> Int -> Maybe Double -> Double 
+computeContour3d :: Voxel -> Maybe Double -> Double 
                  -> IO ((Ptr (Ptr CDouble)), Int)
-computeContour3d vox n voxmax level = do
-    voxelmax <- voxelMax vox n
+computeContour3d voxel voxmax level = do
+    voxelmax <- voxelMax voxel
     let max' = fromMaybe (realToFrac $ voxelmax) voxmax
-    nrowsPtr <- mallocBytes (sizeOf (undefined :: CUInt))
-    result <- c_computeContour3d vox n' n' n' (realToFrac max') (realToFrac level) nrowsPtr
+    nrowsPtr <- mallocBytes (sizeOf (undefined :: CSize))
+    result <- c_computeContour3d (fst voxel) 
+              (fromIntegral nx) (fromIntegral ny) (fromIntegral nz) 
+              (realToFrac max') (realToFrac level) nrowsPtr
     nrows <- peek nrowsPtr
     free nrowsPtr
     return (result, fromIntegral nrows)
     where
-    n' = fromIntegral n 
+    (_, (nx,ny,nz)) = voxel 
 
-computeContour3d' :: (Ptr (Ptr (Ptr CDouble))) -> Int -> Maybe Double -> Double 
+computeContour3d' :: Voxel -> Maybe Double -> Double 
                   -> IO [[CDouble]]
-computeContour3d' vox n voxmax level = do
-    (ppCDouble, nrows) <- computeContour3d vox n voxmax level
+computeContour3d' voxel voxmax level = do
+    (ppCDouble, nrows) <- computeContour3d voxel voxmax level
     mapM (peekArray nrows) =<< (peekArray 3 ppCDouble)
 

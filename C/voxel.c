@@ -11,17 +11,21 @@ double*** voxel(
     double ymax,
     double zmin,
     double zmax,
-    unsigned n
+    unsigned nx,
+    unsigned ny,
+    unsigned nz
 )
 {
-    double*** out = malloc(n * sizeof(double**));
-    for(unsigned i=0; i<n; i++){
-        out[i] = malloc(n * sizeof(double*));
-        for(unsigned j=0; j<n ; j++){
-            out[i][j] = malloc(n * sizeof(double));
-            for(unsigned k=0; k<n; k++){
+    double*** out = malloc(nx * sizeof(double**));
+    for(unsigned i=0; i<nx; i++){
+        out[i] = malloc(ny * sizeof(double*));
+        for(unsigned j=0; j<ny ; j++){
+            out[i][j] = malloc(nz * sizeof(double));
+            for(unsigned k=0; k<nz; k++){
                 out[i][j][k] = 
-                  (*f)(xmin + (xmax-xmin)*i/(n-1), ymin + (ymax-ymin)*j/(n-1), zmin + (zmax-zmin)*k/(n-1)); 
+                  (*f)(xmin + (xmax-xmin)*i/(nx-1), 
+                       ymin + (ymax-ymin)*j/(ny-1), 
+                       zmin + (zmax-zmin)*k/(nz-1)); 
             }
         }
     }
