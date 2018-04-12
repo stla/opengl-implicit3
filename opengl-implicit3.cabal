@@ -14,9 +14,13 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Voxel
-                     , ComputeContour3d
-                     , Test
+  exposed-modules:     MarchingCubes.Voxel
+                     , MarchingCubes.ComputeContour3d
+                     , MarchingCubes.Test
+                     , MarchingCubes.OpenGL
+                     , MarchingCubes
+                     , Utils.OpenGL
+                     , Goursat
   build-depends:       base >= 4.7 && < 5
                      , OpenGL
                      , GLUT
@@ -30,10 +34,10 @@ library
                      , C/voxel.c
   ghc-options:         -Wall
 
-executable goursat
+executable testmc
   hs-source-dirs:      src-exe
   main-is:             Main.hs
-  ghc-options:         -O3
+  ghc-options:         -fobject-code -fPIC
   build-depends:       base >= 4.7 && < 5
                      , opengl-implicit3
   default-language:    Haskell2010

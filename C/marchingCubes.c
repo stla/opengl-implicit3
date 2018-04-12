@@ -311,11 +311,11 @@ unsigned** levCells(double*** A, unsigned nx, unsigned ny, unsigned nz, double l
         bottomTypes = topTypes;
         // freeMatrix_u(bottomTypes, nx-1);
         // unsigned** bottomTypes = copyMatrix(topTypes, nx-1, ny-1);
-        // freeMatrix_u(topTypes, nx-1);
         lengths[k] = length;
         totallength += (size_t) length;
-        //freeMatrix_u(cellTypes, nx-1);
-        //freeMatrix_u(goodcells01, 2);
+        //freeMatrix_s(topTypes, nx-1);
+        freeMatrix_s(cellTypes, nx-1);
+        freeMatrix_u(goodcells01, 2);
     }
     unsigned** out = malloc(4 * sizeof(unsigned*));
     out[0] = malloc(totallength * sizeof(unsigned));

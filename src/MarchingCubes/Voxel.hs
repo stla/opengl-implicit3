@@ -1,5 +1,6 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
-module Voxel
+module MarchingCubes.Voxel
+  (makeVoxel, voxelMax, Voxel)
   where
 import Control.Monad ((=<<))
 import           Foreign.C.Types       

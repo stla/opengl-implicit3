@@ -8,7 +8,7 @@ double f(double x, double y, double z){
 }
 
 int main(){
-    double*** vxl = voxel(&f, -2, 2, -2, 2, -2, 2, 5);
+    double*** vxl = voxel(&f, -2, 2, -2, 2, -2, 2, 5, 5, 5);
     size_t ntriangles;
     double** contour = computeContour3d(vxl, 5, 5, 5, 12, 1, &ntriangles);
     printf("nrows: %zu\n", ntriangles);
