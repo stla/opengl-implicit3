@@ -9,7 +9,7 @@ import           Foreign.Marshal.Array (peekArray)
 import           Foreign.Ptr           (FunPtr, Ptr, freeHaskellFunPtr)
 -- import           Foreign.Storable      (poke, peek, sizeOf)
 
-type Voxel = (Ptr (Ptr (Ptr CDouble)), (Int,Int,Int))
+type Voxel = (Ptr (Ptr (Ptr CDouble)), (Int,Int,Int), ((Double,Double),(Double,Double),(Double,Double)))
 
 type CFunction = CDouble -> CDouble -> CDouble -> IO CDouble
 
@@ -43,10 +43,10 @@ makeVoxel fun ((xm,xM),(ym,yM),(zm,zM)) (nx, ny, nz) = do
                              (realToFrac zm) (realToFrac zM)
                              (fromIntegral nx) (fromIntegral ny) (fromIntegral nz)
     freeHaskellFunPtr funPtr
-    return (result, (nx,ny,nz))
+    return (result, (nx,ny,nz), ((xm,xM),(ym,yM),(zm,zM)))
 
 voxel2tripleList :: Voxel -> IO [[[CDouble]]]
-voxel2tripleList (pppCDouble, (nx,ny,nz)) = 
+voxel2tripleList (pppCDouble, (nx,ny,nz), _) = 
     mapM (mapM (peekArray nz)) =<< (mapM (peekArray ny) =<< ((peekArray nx) pppCDouble))
     --- where n' = n-1
 

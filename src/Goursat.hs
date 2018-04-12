@@ -28,7 +28,7 @@ voxel a b = makeVoxel (fGoursat a b) ((-2.5,2.5),(-2.5,2.5),(-2.5,2.5)) (50, 50,
 trianglesGoursat :: Double -> Double -> Double -> IO [NTriangle]
 trianglesGoursat a b l = do 
   vxl <- voxel a b
-  triangles <- computeContour3d' vxl Nothing l
+  triangles <- computeContour3d'' vxl Nothing l
   return $ map fromTriangle triangles
 
 display :: IORef GLfloat -> IORef GLfloat -> IORef GLfloat -- rotations
