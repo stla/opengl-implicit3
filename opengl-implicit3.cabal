@@ -25,6 +25,7 @@ library
                      , MarchingCubes
                      , Utils.OpenGL
                      , Goursat
+                     , Bretzel5
   build-depends:       base >= 4.7 && < 5
                      , OpenGL
                      , GLUT
@@ -34,6 +35,7 @@ library
   other-extensions:    ForeignFunctionInterface
   include-dirs:        C
   C-sources:           C/utils.c
+                     , C/tables.c
                      , C/marchingCubes.c
                      , C/voxel.c
   ghc-options:         -Wall
@@ -52,7 +54,7 @@ executable goursat
     buildable: False
   hs-source-dirs:      src-exe
   main-is:             ExeGoursat.hs
-  ghc-options:         -g -rtsopts -main-is ExeGoursat
+  ghc-options:         -fllvm -main-is ExeGoursat
   build-depends:       base >= 4.7 && < 5
                      , opengl-implicit3
   default-language:    Haskell2010

@@ -2,17 +2,17 @@
 module MarchingCubes.ComputeContour3d
   (computeContour3d, computeContour3d', computeContour3d'', XYZ, Triangle)
   where
-import Control.Monad ((=<<), when)
-import           Foreign.C.Types       
+import           Control.Monad         (when, (=<<))
+import           Foreign.C.Types
 import           Foreign.Marshal.Alloc (free, mallocBytes)
 import           Foreign.Marshal.Array (peekArray)
-import           Foreign.Ptr (Ptr)
-import Foreign.Storable (peek, sizeOf)
-import MarchingCubes.Voxel
+import           Foreign.Ptr           (Ptr)
+import           Foreign.Storable      (peek, sizeOf)
+import           MarchingCubes.Voxel
 -- import Data.Maybe
-import Data.List.Split (chunksOf)
-import Data.List (transpose)
-import Data.Tuple.Extra (fst3, snd3, thd3)
+import           Data.List             (transpose)
+import           Data.List.Split       (chunksOf)
+import           Data.Tuple.Extra      (fst3, snd3, thd3)
 
 type XYZ = (Double,Double,Double)
 type Triangle = (XYZ, XYZ, XYZ)
@@ -25,10 +25,10 @@ toTriangles trianglesAsList = map toTriangle (chunksOf 3 trianglesAsList)
       where
       toTriplet [x,y,z] = (x,y,z)
       toTriplet _       = undefined
-    
 
-foreign import ccall "xcomputeContour3d" c_computeContour3d
-    :: (Ptr (Ptr (Ptr CDouble)))
+
+foreign import ccall "computeContour3d" c_computeContour3d
+    :: Ptr (Ptr (Ptr CDouble))
     -> CUInt
     -> CUInt
     -> CUInt
@@ -37,29 +37,29 @@ foreign import ccall "xcomputeContour3d" c_computeContour3d
     -> Ptr CSize
     -> IO (Ptr (Ptr CDouble))
 
-computeContour3d :: Voxel -> Maybe Double -> Double 
-                 -> IO ((Ptr (Ptr CDouble)), Int)
+computeContour3d :: Voxel -> Maybe Double -> Double
+                 -> IO (Ptr (Ptr CDouble), Int)
 computeContour3d voxel voxmax level = do
     max' <- maybe (voxelMax voxel) return voxmax
     -- voxelmax <- voxelMax voxel
     -- let max' = fromMaybe (realToFrac $ voxelmax) voxmax
-    let (_, (nx,ny,nz), _) = voxel 
+    let (_, (nx,ny,nz), _) = voxel
     nrowsPtr <- mallocBytes (sizeOf (undefined :: CSize))
-    result <- c_computeContour3d (fst3 voxel) 
-              (fromIntegral nx) (fromIntegral ny) (fromIntegral nz) 
+    result <- c_computeContour3d (fst3 voxel)
+              (fromIntegral nx) (fromIntegral ny) (fromIntegral nz)
               (realToFrac max') (realToFrac level) nrowsPtr
     nrows <- peek nrowsPtr
     free nrowsPtr
     return (result, fromIntegral nrows)
 
-computeContour3d' :: Voxel -> Maybe Double -> Double 
+computeContour3d' :: Voxel -> Maybe Double -> Double
                   -> IO [Triangle]
 computeContour3d' voxel voxmax level = do
     (ppCDouble, nrows) <- computeContour3d voxel voxmax level
-    points <- mapM (peekArray nrows) =<< (peekArray 3 ppCDouble)
+    points <- mapM (peekArray nrows) =<< peekArray 3 ppCDouble
     return $ toTriangles (transpose (map (map realToFrac) points))
 
-computeContour3d'' :: Voxel -> Maybe Double -> Double 
+computeContour3d'' :: Voxel -> Maybe Double -> Double
                    -> IO [Triangle]
 computeContour3d'' voxel voxmax level = do
   triangles <- computeContour3d' voxel voxmax level
@@ -74,4 +74,4 @@ computeContour3d'' voxel voxmax level = do
         sx = s xm xM nx
         sy = s ym yM ny
         sz = s zm zM nz
-    
+

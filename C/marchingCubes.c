@@ -4,6 +4,291 @@
 #endif
 #include <math.h>   // for floor - compile with flag -lm
 
+size_t** faceType(double** M, unsigned m, unsigned n, double level, double max){
+    size_t** L = levelMatrix(M, m, n, level, level<max);
+    size_t** minorMat = minorMatrix(L,m,n,m-1,n-1);
+    size_t** sminorMat2 = scaleMinorMatrix(2,L,m,n,0,n-1);
+    size_t** sminorMat4 = scaleMinorMatrix(4,L,m,n,0,0);
+    size_t** sminorMat8 = scaleMinorMatrix(8,L,m,n,m-1,0);
+    size_t** sum1 = matricialSum(minorMat, sminorMat2, m-1, n-1);
+    size_t** sum2 = matricialSum(sminorMat4, sminorMat8, m-1, n-1);
+    size_t** out = matricialSum(sum1, sum2, m-1, n-1);
+    freeMatrix_s(L,m);
+    freeMatrix_s(sminorMat2,m-1);
+    freeMatrix_s(sminorMat4,m-1);
+    freeMatrix_s(sminorMat8,m-1);
+    freeMatrix_s(sum1,m-1);
+    freeMatrix_s(sum2,m-1);
+    return out; 
+}
+
+unsigned** levCells(double*** A, unsigned nx, unsigned ny, unsigned nz, double level, double max, 
+                    size_t* outnrow){
+    // //printf("nz: %u\n", nz);
+    // unsigned* cells[nz-1];
+    // unsigned* types[nz-1];
+    unsigned** cells = malloc((nz-1) * sizeof(unsigned*));
+    unsigned** types = malloc((nz-1) * sizeof(unsigned*));    
+    // //printf("slice 0:\n");
+    // displayMatrix(toMatrix(A, nx, ny, 0), nx, ny);
+    size_t** bottomTypes = faceType(toMatrix(A, nx, ny, 0), nx, ny, level, max);
+    // //printf("bottomTypes:\n");
+    // displayMatrix_u(bottomTypes, nx-1, ny-1);
+    size_t totallength = 0;
+    unsigned lengths[nz-1];
+    for(unsigned k=0; k<nz-1; k++){
+        size_t** topTypes = faceType(toMatrix(A, nx, ny, k+1), nx, ny, level, max);
+        // //printf("topTypes:\n");
+        // displayMatrix_u(topTypes, nx-1, ny-1);
+        size_t** cellTypes = 
+            matricialSum(bottomTypes, scaleMatrix(16, topTypes, nx-1, ny-1), nx-1, ny-1);
+        // //printf("cellTypes:\n");
+        // displayMatrix_u(cellTypes, nx-1, ny-1);
+        unsigned length;
+        unsigned** goodcells01 = whichIndicesAndItems(cellTypes, nx-1, ny-1, &length);
+        cells[k] = malloc(length * sizeof(unsigned));
+        types[k] = malloc(length * sizeof(unsigned));
+        for(unsigned l=0; l<length; l++){
+            cells[k][l] = goodcells01[0][l] + (nx-1)*(ny-1)*k + 1;
+            types[k][l] = goodcells01[1][l];
+        }
+        bottomTypes = topTypes;
+        // freeMatrix_u(bottomTypes, nx-1);
+        // unsigned** bottomTypes = copyMatrix(topTypes, nx-1, ny-1);
+        lengths[k] = length;
+        totallength += (size_t) length;
+        //freeMatrix_s(topTypes, nx-1);
+        freeMatrix_s(cellTypes, nx-1);
+        freeMatrix_u(goodcells01, 2);
+    }
+    unsigned** out = malloc(4 * sizeof(unsigned*));
+    out[0] = malloc(totallength * sizeof(unsigned));
+    out[1] = malloc(totallength * sizeof(unsigned));
+    out[2] = malloc(totallength * sizeof(unsigned));
+    out[3] = malloc(totallength * sizeof(unsigned));
+    size_t count=0;
+    for(unsigned k=0; k<nz-1; k++){
+        for(unsigned l=0; l<lengths[k]; l++){
+            out[0][count] = (cells[k][l]-1) % (nx-1) + 1;
+            out[1][count] = ((cells[k][l]-1) / (nx-1)) % (ny-1) + 1;
+            out[2][count] = (cells[k][l]-1) / ((nx-1) * (ny-1)) + 1;
+            out[3][count] = types[k][l];
+            count++;  
+        }
+    }
+    freeMatrix_u(cells, nz-1);
+    freeMatrix_u(types, nz-1);
+    *outnrow = totallength;
+    return out;
+}
+
+size_t** GetBasic1(unsigned* R, size_t nR, size_t** vivjvk, unsigned n){ // n = nrow(vivjvk) - not used ?
+  size_t** indexPtr = malloc(8 * sizeof(size_t*));
+  for(unsigned i=0; i<8; i++){
+      indexPtr[i] = malloc(3 * sizeof(size_t));
+      for(unsigned j=0; j<3; j++){
+          indexPtr[i][j] = indexArray[i][j];
+      }
+  }
+  size_t** cube1 = malloc(nR * sizeof(size_t*));
+  for(size_t i=0; i<nR; i++){
+      cube1[i] = malloc(3 * sizeof(size_t));
+      for(unsigned j=0; j<3; j++){
+          cube1[i][j] = vivjvk[R[i]][j];
+      }
+  }
+  size_t** k1 = kro1(indexPtr, 8, 3, nR);
+  size_t** k2 = kro2(cube1, nR, 3, 8);
+  size_t** cubeco = matricialSum(k1, k2, 8*nR, 3);
+  freeMatrix_s(indexPtr,8); 
+  freeMatrix_s(cube1,nR); 
+  freeMatrix_s(k1,24); 
+  freeMatrix_s(k2,8*nR);
+  return cubeco;
+}
+
+double* GetBasic2(double*** A, double level, unsigned* R, size_t nR, size_t** vivjvk){
+    size_t** cubeco = GetBasic1(R, nR, vivjvk, 999); // 999 useless ?
+    double* values = malloc((8*nR+1)*sizeof(double));
+    for(size_t i=0; i<8*nR; i++){
+        values[i] = A[cubeco[i][0]-1][cubeco[i][1]-1][cubeco[i][2]-1] - level;
+    }
+    values[8*nR] = 0;
+    freeMatrix_s(cubeco, 8*nR);
+    return values;
+}
+
+
+
+unsigned* get_tcase(unsigned* types, size_t nrow){
+    unsigned CRF[256] = 
+    {1, 2, 2, 3, 2, 4, 3, 6, 2, 3, 4, 6, 3, 6, 6, 9, 2, 3, 4, 6, 
+     5, 7, 7, 12, 4, 6, 8, 10, 7, 15, 13, 6, 2, 4, 3, 6, 4, 8, 6, 
+     10, 5, 7, 7, 15, 7, 13, 12, 6, 3, 6, 6, 9, 7, 13, 15, 6, 7, 12, 
+     13, 6, 11, 7, 7, 3, 2, 5, 4, 7, 3, 7, 6, 15, 4, 7, 8, 13, 6, 
+     12, 10, 6, 4, 7, 8, 13, 7, 11, 13, 7, 8, 13, 14, 8, 13, 7, 8, 
+     4, 3, 7, 6, 12, 6, 13, 9, 6, 7, 11, 13, 7, 15, 7, 6, 3, 6, 15, 
+     10, 6, 12, 7, 6, 3, 13, 7, 8, 4, 7, 5, 4, 2, 2, 4, 5, 7, 4, 8, 
+     7, 13, 3, 6, 7, 12, 6, 10, 15, 6, 3, 6, 7, 15, 7, 13, 11, 7, 
+     6, 9, 13, 6, 12, 6, 7, 3, 4, 8, 7, 13, 8, 14, 13, 8, 7, 13, 11, 
+     7, 13, 8, 7, 4, 6, 10, 12, 6, 13, 8, 7, 4, 15, 6, 7, 3, 7, 4, 
+     5, 2, 3, 7, 7, 11, 6, 13, 12, 7, 6, 15, 13, 7, 9, 6, 6, 3, 6, 
+     12, 13, 7, 15, 7, 7, 5, 10, 6, 8, 4, 6, 3, 4, 2, 6, 13, 15, 7, 
+     10, 8, 6, 4, 12, 7, 7, 5, 6, 4, 3, 2, 9, 6, 6, 3, 6, 4, 3, 2, 
+     6, 3, 4, 2, 3, 2, 2, 1};
+    unsigned* out = malloc(nrow * sizeof(unsigned));
+    for(size_t i=0; i<nrow; i++){
+        //printf("types[i]=%u\n", types[i]);
+        out[i] = CRF[types[i]]-1;
+    }
+    return out;
+} 
+
+unsigned* getR(unsigned* tcase, size_t nrow, size_t* nR){
+    unsigned* out = malloc(nrow * sizeof(unsigned));
+    size_t count=0;
+    for(size_t i=0; i<nrow; i++){
+        ////printf("in loop\n");
+        ////printf("tcase[%zu]=%u\n", i, tcase[i]);
+        if(tcase[i]==1 || tcase[i]==2 || tcase[i]==5 || tcase[i]==8 || tcase[i]==9 || tcase[i]==11 || tcase[i]==14){
+            out[count] = (unsigned) i;
+            count++;
+            //printf("tcase matched\n");
+        }
+        ////printf("end if\n");
+    }
+    ////printf("end loop");
+    *nR = count;
+    return(out);
+}
+
+double** LambdaMu(double* x1, size_t n){
+    double** lambdamu = malloc(2 * sizeof(double*));
+    lambdamu[0] = malloc(n * sizeof(double));
+    lambdamu[1] = malloc(n * sizeof(double));
+    for(size_t i=0; i<n; i++){
+        lambdamu[0][i] = floor(x1[i]/9);
+        lambdamu[1][i] = 1 - lambdamu[0][i];
+    }
+    return lambdamu;
+}
+
+double* average(double** lambdamu, double* w1, double* w2, size_t n){
+    double* lambda = lambdamu[0]; double* mu = lambdamu[1];
+    double* out = malloc(n * sizeof(double));
+    for(size_t i=0; i<n; i++){
+        out[i] =  mu[i]*w1[i] + lambda[i]*w2[i];
+    }
+    return out;
+}
+
+double* average7(double** lambdamu, double* w, size_t n){
+    double* lambda = lambdamu[0]; double* mu = lambdamu[1];
+    double* out = malloc(n * sizeof(double));
+    for(size_t i=0; i<n; i++){
+        out[i] =  mu[i]*w[i] + lambda[i];
+    }
+    return out;    
+}
+
+double* average8(double** lambdamu, double* w, size_t n){
+    double* lambda = lambdamu[0]; double* mu = lambdamu[1];
+    double* out = malloc(n * sizeof(double));
+    for(size_t i=0; i<n; i++){
+        out[i] =  mu[i]*w[i] - lambda[i];
+    }
+    return out;    
+}
+
+double** GetPoints(size_t** cubeco, double* values, size_t* p1, unsigned* x1, 
+                   unsigned* x2, size_t n){
+    unsigned* p1x1 = malloc(n * sizeof(unsigned));
+    unsigned* p1x2 = malloc(n * sizeof(unsigned));
+    double* xx1 = malloc(n * sizeof(double));
+    for(size_t i=0; i<n; i++){
+        p1x1[i] = p1[i] + x1[i];
+        p1x2[i] = p1[i] + x2[i];
+        xx1[i] = (double) x1[i];
+    }
+    double** lambdamu = LambdaMu(xx1, n);
+    double* v1 = malloc(n * sizeof(double));
+    double* v2 = malloc(n * sizeof(double));
+    double* v3 = malloc(n * sizeof(double));
+    double* v4 = malloc(n * sizeof(double));
+    double* v5 = malloc(n * sizeof(double));
+    double* v6 = malloc(n * sizeof(double));
+    double* v7 = malloc(n * sizeof(double));
+    double* v8 = malloc(n * sizeof(double));
+    double* w1 = malloc(n * sizeof(double));
+    double* w2 = malloc(n * sizeof(double));
+    double* w3 = malloc(n * sizeof(double));
+    double* w4 = malloc(n * sizeof(double));
+    double* w5 = malloc(n * sizeof(double));
+    double* w6 = malloc(n * sizeof(double));
+    // double v1[n]; double w1[n];
+    // double v2[n]; double w2[n];
+    // double v3[n]; double w3[n];
+    // double v4[n]; double w4[n];
+    // double v5[n]; double w5[n];
+    // double v6[n]; double w6[n];
+    // double v7[n]; double v8[n];
+    for(size_t i=0; i<n; i++){
+        v1[i] = (double) cubeco[p1x1[i]-2][0];
+        w1[i] = (double) cubeco[p1[i]-1][0];
+        v2[i] = (double) cubeco[p1x2[i]-2][0];
+        w2[i] = (double) cubeco[p1[i]][0];
+        v3[i] = (double) cubeco[p1x1[i]-2][1];
+        w3[i] = (double) cubeco[p1[i]][1];
+        v4[i] = (double) cubeco[p1x2[i]-2][1];
+        w4[i] = (double) cubeco[p1[i]+1][1];
+        v5[i] = (double) cubeco[p1x1[i]-2][2];
+        w5[i] = (double) cubeco[p1[i]][2];
+        v6[i] = (double) cubeco[p1x2[i]-2][2];
+        w6[i] = (double) cubeco[p1[i]+4][2];
+        v7[i] = values[p1x1[i]-2];
+        v8[i] = values[p1x2[i]-2];
+    }
+    free(p1x1);
+    free(p1x2);
+    double** out = malloc(8 * sizeof(double*));
+    out[0] = average(lambdamu, v1, w1, n); 
+    out[1] = average(lambdamu, v2, w2, n); 
+    out[2] = average(lambdamu, v3, w3, n); 
+    out[3] = average(lambdamu, v4, w4, n); 
+    out[4] = average(lambdamu, v5, w5, n); 
+    out[5] = average(lambdamu, v6, w6, n);
+    out[6] = average7(lambdamu, v7, n);
+    out[7] = average8(lambdamu, v8, n); 
+    freeMatrix_d(lambdamu,2);
+    free(v1); free(v2); free(v3); free(v4); free(v5); free(v6); free(v7); free(v8); 
+    free(w1); free(w2); free(w3); free(w4); free(w5); free(w6);
+    return(out);
+}
+
+double** CalPoints(double** points, size_t n){
+    double* x1 = points[0];
+    double* x2 = points[1];
+    double* y1 = points[2];
+    double* y2 = points[3];
+    double* z1 = points[4];
+    double* z2 = points[5];
+    double* v1 = points[6];
+    double* v2 = points[7];
+    double* x = malloc(n * sizeof(double));
+    double* y = malloc(n * sizeof(double));
+    double* z = malloc(n * sizeof(double));
+    for(size_t i=0; i<n; i++){
+        double s = v1[i]/(v1[i]-v2[i]);
+        x[i] = x1[i] + s*(x2[i]-x1[i]);
+        y[i] = y1[i] + s*(y2[i]-y1[i]);
+        z[i] = z1[i] + s*(z2[i]-z1[i]);
+    }
+    double** out = malloc(3 * sizeof(double*));
+    out[0] = x; out[1] = y; out[2] = z;
+    // free(x);free(y);free(z); NON
+    return(out);
+}
+
 // https://stackoverflow.com/questions/1083658/do-jagged-arrays-exist-in-c-c
 unsigned edgesRow0[] = {4, 9, 1};
 unsigned edgesRow1[] = {1, 10, 2};
@@ -261,339 +546,13 @@ unsigned edgesRow252[] = {1, 2, 10};
 unsigned edgesRow253[] = {4, 1, 9};
 unsigned (*Edges[])[] = {&edgesRow0, &edgesRow1, &edgesRow2, &edgesRow3, &edgesRow4, &edgesRow5, &edgesRow6, &edgesRow7, &edgesRow8, &edgesRow9, &edgesRow10, &edgesRow11, &edgesRow12, &edgesRow13, &edgesRow14, &edgesRow15, &edgesRow16, &edgesRow17, &edgesRow18, &edgesRow19, &edgesRow20, &edgesRow21, &edgesRow22, &edgesRow23, &edgesRow24, &edgesRow25, &edgesRow26, &edgesRow27, &edgesRow28, &edgesRow29, &edgesRow30, &edgesRow31, &edgesRow32, &edgesRow33, &edgesRow34, &edgesRow35, &edgesRow36, &edgesRow37, &edgesRow38, &edgesRow39, &edgesRow40, &edgesRow41, &edgesRow42, &edgesRow43, &edgesRow44, &edgesRow45, &edgesRow46, &edgesRow47, &edgesRow48, &edgesRow49, &edgesRow50, &edgesRow51, &edgesRow52, &edgesRow53, &edgesRow54, &edgesRow55, &edgesRow56, &edgesRow57, &edgesRow58, &edgesRow59, &edgesRow60, &edgesRow61, &edgesRow62, &edgesRow63, &edgesRow64, &edgesRow65, &edgesRow66, &edgesRow67, &edgesRow68, &edgesRow69, &edgesRow70, &edgesRow71, &edgesRow72, &edgesRow73, &edgesRow74, &edgesRow75, &edgesRow76, &edgesRow77, &edgesRow78, &edgesRow79, &edgesRow80, &edgesRow81, &edgesRow82, &edgesRow83, &edgesRow84, &edgesRow85, &edgesRow86, &edgesRow87, &edgesRow88, &edgesRow89, &edgesRow90, &edgesRow91, &edgesRow92, &edgesRow93, &edgesRow94, &edgesRow95, &edgesRow96, &edgesRow97, &edgesRow98, &edgesRow99, &edgesRow100, &edgesRow101, &edgesRow102, &edgesRow103, &edgesRow104, &edgesRow105, &edgesRow106, &edgesRow107, &edgesRow108, &edgesRow109, &edgesRow110, &edgesRow111, &edgesRow112, &edgesRow113, &edgesRow114, &edgesRow115, &edgesRow116, &edgesRow117, &edgesRow118, &edgesRow119, &edgesRow120, &edgesRow121, &edgesRow122, &edgesRow123, &edgesRow124, &edgesRow125, &edgesRow126, &edgesRow127, &edgesRow128, &edgesRow129, &edgesRow130, &edgesRow131, &edgesRow132, &edgesRow133, &edgesRow134, &edgesRow135, &edgesRow136, &edgesRow137, &edgesRow138, &edgesRow139, &edgesRow140, &edgesRow141, &edgesRow142, &edgesRow143, &edgesRow144, &edgesRow145, &edgesRow146, &edgesRow147, &edgesRow148, &edgesRow149, &edgesRow150, &edgesRow151, &edgesRow152, &edgesRow153, &edgesRow154, &edgesRow155, &edgesRow156, &edgesRow157, &edgesRow158, &edgesRow159, &edgesRow160, &edgesRow161, &edgesRow162, &edgesRow163, &edgesRow164, &edgesRow165, &edgesRow166, &edgesRow167, &edgesRow168, &edgesRow169, &edgesRow170, &edgesRow171, &edgesRow172, &edgesRow173, &edgesRow174, &edgesRow175, &edgesRow176, &edgesRow177, &edgesRow178, &edgesRow179, &edgesRow180, &edgesRow181, &edgesRow182, &edgesRow183, &edgesRow184, &edgesRow185, &edgesRow186, &edgesRow187, &edgesRow188, &edgesRow189, &edgesRow190, &edgesRow191, &edgesRow192, &edgesRow193, &edgesRow194, &edgesRow195, &edgesRow196, &edgesRow197, &edgesRow198, &edgesRow199, &edgesRow200, &edgesRow201, &edgesRow202, &edgesRow203, &edgesRow204, &edgesRow205, &edgesRow206, &edgesRow207, &edgesRow208, &edgesRow209, &edgesRow210, &edgesRow211, &edgesRow212, &edgesRow213, &edgesRow214, &edgesRow215, &edgesRow216, &edgesRow217, &edgesRow218, &edgesRow219, &edgesRow220, &edgesRow221, &edgesRow222, &edgesRow223, &edgesRow224, &edgesRow225, &edgesRow226, &edgesRow227, &edgesRow228, &edgesRow229, &edgesRow230, &edgesRow231, &edgesRow232, &edgesRow233, &edgesRow234, &edgesRow235, &edgesRow236, &edgesRow237, &edgesRow238, &edgesRow239, &edgesRow240, &edgesRow241, &edgesRow242, &edgesRow243, &edgesRow244, &edgesRow245, &edgesRow246, &edgesRow247, &edgesRow248, &edgesRow249, &edgesRow250, &edgesRow251, &edgesRow252, &edgesRow253};
 
-size_t indexArray[8][3] =
-{{0, 0, 0},
- {1, 0, 0},
- {1, 1, 0},
- {0, 1, 0},
- {0, 0, 1},
- {1, 0, 1},
- {1, 1, 1},
- {0, 1, 1}};
-
-unsigned EdgePoints[13][3] = 
-{{1, 1, 2},
- {2, 2, 3},
- {3, 3, 4},
- {4, 4, 1},
- {5, 5, 6},
- {6, 6, 7},
- {7, 7, 8},
- {8, 8, 5},
- {9, 1, 5},
- {10, 2, 6},
- {11, 3, 7},
- {12, 4, 8},
- {13, 9, 9}};
-
-
-size_t** faceType(double** M, unsigned m, unsigned n, double level, double max){
-    size_t** L = levelMatrix(M, m, n, level, level<max);
-    size_t** minorMat = minorMatrix(L,m,n,m-1,n-1);
-    size_t** sminorMat2 = scaleMinorMatrix(2,L,m,n,0,n-1);
-    size_t** sminorMat4 = scaleMinorMatrix(4,L,m,n,0,0);
-    size_t** sminorMat8 = scaleMinorMatrix(8,L,m,n,m-1,0);
-    size_t** sum1 = matricialSum(minorMat, sminorMat2, m-1, n-1);
-    size_t** sum2 = matricialSum(sminorMat4, sminorMat8, m-1, n-1);
-    size_t** out = matricialSum(sum1, sum2, m-1, n-1);
-    freeMatrix_s(L,m);
-    freeMatrix_s(sminorMat2,m-1);
-    freeMatrix_s(sminorMat4,m-1);
-    freeMatrix_s(sminorMat8,m-1);
-    freeMatrix_s(sum1,m-1);
-    freeMatrix_s(sum2,m-1);
-    return out; 
-}
-
-unsigned** levCells(double*** A, unsigned nx, unsigned ny, unsigned nz, double level, double max, 
-                    size_t* outnrow){
-    // //printf("nz: %u\n", nz);
-    // unsigned* cells[nz-1];
-    // unsigned* types[nz-1];
-    unsigned** cells = malloc((nz-1) * sizeof(unsigned*));
-    unsigned** types = malloc((nz-1) * sizeof(unsigned*));    
-    // //printf("slice 0:\n");
-    // displayMatrix(toMatrix(A, nx, ny, 0), nx, ny);
-    size_t** bottomTypes = faceType(toMatrix(A, nx, ny, 0), nx, ny, level, max);
-    // //printf("bottomTypes:\n");
-    // displayMatrix_u(bottomTypes, nx-1, ny-1);
-    size_t totallength = 0;
-    unsigned lengths[nz-1];
-    for(unsigned k=0; k<nz-1; k++){
-        size_t** topTypes = faceType(toMatrix(A, nx, ny, k+1), nx, ny, level, max);
-        // //printf("topTypes:\n");
-        // displayMatrix_u(topTypes, nx-1, ny-1);
-        size_t** cellTypes = 
-            matricialSum(bottomTypes, scaleMatrix(16, topTypes, nx-1, ny-1), nx-1, ny-1);
-        // //printf("cellTypes:\n");
-        // displayMatrix_u(cellTypes, nx-1, ny-1);
-        unsigned length;
-        unsigned** goodcells01 = whichIndicesAndItems(cellTypes, nx-1, ny-1, &length);
-        cells[k] = malloc(length * sizeof(unsigned));
-        types[k] = malloc(length * sizeof(unsigned));
-        for(unsigned l=0; l<length; l++){
-            cells[k][l] = goodcells01[0][l] + (nx-1)*(ny-1)*k + 1;
-            types[k][l] = goodcells01[1][l];
-        }
-        bottomTypes = topTypes;
-        // freeMatrix_u(bottomTypes, nx-1);
-        // unsigned** bottomTypes = copyMatrix(topTypes, nx-1, ny-1);
-        lengths[k] = length;
-        totallength += (size_t) length;
-        //freeMatrix_s(topTypes, nx-1);
-        freeMatrix_s(cellTypes, nx-1);
-        freeMatrix_u(goodcells01, 2);
-    }
-    unsigned** out = malloc(4 * sizeof(unsigned*));
-    out[0] = malloc(totallength * sizeof(unsigned));
-    out[1] = malloc(totallength * sizeof(unsigned));
-    out[2] = malloc(totallength * sizeof(unsigned));
-    out[3] = malloc(totallength * sizeof(unsigned));
-    size_t count=0;
-    for(unsigned k=0; k<nz-1; k++){
-        for(unsigned l=0; l<lengths[k]; l++){
-            out[0][count] = (cells[k][l]-1) % (nx-1) + 1;
-            out[1][count] = ((cells[k][l]-1) / (nx-1)) % (ny-1) + 1;
-            out[2][count] = (cells[k][l]-1) / ((nx-1) * (ny-1)) + 1;
-            out[3][count] = types[k][l];
-            count++;  
-        }
-    }
-    freeMatrix_u(cells, nz-1);
-    freeMatrix_u(types, nz-1);
-    *outnrow = totallength;
-    return out;
-}
-
-size_t** GetBasic1(unsigned* R, size_t nR, size_t** vivjvk, unsigned n){ // n = nrow(vivjvk) - not used ?
-  size_t** indexPtr = malloc(8 * sizeof(size_t*));
-  for(unsigned i=0; i<8; i++){
-      indexPtr[i] = malloc(3 * sizeof(size_t));
-      for(unsigned j=0; j<3; j++){
-          indexPtr[i][j] = indexArray[i][j];
-      }
-  }
-  size_t** cube1 = malloc(nR * sizeof(size_t*));
-  for(size_t i=0; i<nR; i++){
-      cube1[i] = malloc(3 * sizeof(size_t));
-      for(unsigned j=0; j<3; j++){
-          cube1[i][j] = vivjvk[R[i]][j];
-      }
-  }
-  size_t** k1 = kro1(indexPtr, 8, 3, nR);
-  size_t** k2 = kro2(cube1, nR, 3, 8);
-  size_t** cubeco = matricialSum(k1, k2, 8*nR, 3);
-  freeMatrix_s(indexPtr,8); 
-  freeMatrix_s(cube1,nR); 
-  freeMatrix_s(k1,24); 
-  freeMatrix_s(k2,8*nR);
-  return cubeco;
-}
-
-double* GetBasic2(double*** A, double level, unsigned* R, size_t nR, size_t** vivjvk){
-    size_t** cubeco = GetBasic1(R, nR, vivjvk, 999); // 999 useless ?
-    double* values = malloc((8*nR+1)*sizeof(double));
-    for(size_t i=0; i<8*nR; i++){
-        values[i] = A[cubeco[i][0]-1][cubeco[i][1]-1][cubeco[i][2]-1] - level;
-    }
-    values[8*nR] = 0;
-    freeMatrix_s(cubeco, 8*nR);
-    return values;
-}
-
-
-
-unsigned* get_tcase(unsigned* types, size_t nrow){
-    unsigned CRF[256] = {1, 2, 2, 3, 2, 4, 3, 6, 2, 3, 4, 6, 3, 6, 6, 9, 2, 3, 4, 6, 
-    5, 7, 7, 12, 4, 6, 8, 10, 7, 15, 13, 6, 2, 4, 3, 6, 4, 8, 6, 
-    10, 5, 7, 7, 15, 7, 13, 12, 6, 3, 6, 6, 9, 7, 13, 15, 6, 7, 12, 
-    13, 6, 11, 7, 7, 3, 2, 5, 4, 7, 3, 7, 6, 15, 4, 7, 8, 13, 6, 
-    12, 10, 6, 4, 7, 8, 13, 7, 11, 13, 7, 8, 13, 14, 8, 13, 7, 8, 
-    4, 3, 7, 6, 12, 6, 13, 9, 6, 7, 11, 13, 7, 15, 7, 6, 3, 6, 15, 
-    10, 6, 12, 7, 6, 3, 13, 7, 8, 4, 7, 5, 4, 2, 2, 4, 5, 7, 4, 8, 
-    7, 13, 3, 6, 7, 12, 6, 10, 15, 6, 3, 6, 7, 15, 7, 13, 11, 7, 
-    6, 9, 13, 6, 12, 6, 7, 3, 4, 8, 7, 13, 8, 14, 13, 8, 7, 13, 11, 
-    7, 13, 8, 7, 4, 6, 10, 12, 6, 13, 8, 7, 4, 15, 6, 7, 3, 7, 4, 
-    5, 2, 3, 7, 7, 11, 6, 13, 12, 7, 6, 15, 13, 7, 9, 6, 6, 3, 6, 
-    12, 13, 7, 15, 7, 7, 5, 10, 6, 8, 4, 6, 3, 4, 2, 6, 13, 15, 7, 
-    10, 8, 6, 4, 12, 7, 7, 5, 6, 4, 3, 2, 9, 6, 6, 3, 6, 4, 3, 2, 
-    6, 3, 4, 2, 3, 2, 2, 1};
-    unsigned* out = malloc(nrow * sizeof(unsigned));
-    for(size_t i=0; i<nrow; i++){
-        //printf("types[i]=%u\n", types[i]);
-        out[i] = CRF[types[i]]-1;
-    }
-    return out;
-} 
-
-unsigned* getR(unsigned* tcase, size_t nrow, size_t* nR){
-    unsigned* out = malloc(nrow * sizeof(unsigned));
-    size_t count=0;
-    for(size_t i=0; i<nrow; i++){
-        ////printf("in loop\n");
-        ////printf("tcase[%zu]=%u\n", i, tcase[i]);
-        if(tcase[i]==1 || tcase[i]==2 || tcase[i]==5 || tcase[i]==8 || tcase[i]==9 || tcase[i]==11 || tcase[i]==14){
-            out[count] = (unsigned) i;
-            count++;
-            //printf("tcase matched\n");
-        }
-        ////printf("end if\n");
-    }
-    ////printf("end loop");
-    *nR = count;
-    return(out);
-}
-
-double** LambdaMu(double* x1, size_t n){
-    double** lambdamu = malloc(2 * sizeof(double*));
-    lambdamu[0] = malloc(n * sizeof(double));
-    lambdamu[1] = malloc(n * sizeof(double));
-    for(size_t i=0; i<n; i++){
-        lambdamu[0][i] = floor(x1[i]/9);
-        lambdamu[1][i] = 1 - lambdamu[0][i];
-    }
-    return lambdamu;
-}
-
-double* average(double** lambdamu, double* w1, double* w2, size_t n){
-    double* lambda = lambdamu[0]; double* mu = lambdamu[1];
-    double* out = malloc(n * sizeof(double));
-    for(size_t i=0; i<n; i++){
-        out[i] =  mu[i]*w1[i] + lambda[i]*w2[i];
-    }
-    return out;
-}
-
-double* average7(double** lambdamu, double* w, size_t n){
-    double* lambda = lambdamu[0]; double* mu = lambdamu[1];
-    double* out = malloc(n * sizeof(double));
-    for(size_t i=0; i<n; i++){
-        out[i] =  mu[i]*w[i] + lambda[i];
-    }
-    return out;    
-}
-
-double* average8(double** lambdamu, double* w, size_t n){
-    double* lambda = lambdamu[0]; double* mu = lambdamu[1];
-    double* out = malloc(n * sizeof(double));
-    for(size_t i=0; i<n; i++){
-        out[i] =  mu[i]*w[i] - lambda[i];
-    }
-    return out;    
-}
-
-double** GetPoints(size_t** cubeco, double* values, size_t* p1, unsigned* x1, 
-                   unsigned* x2, size_t n){
-    unsigned* p1x1 = malloc(n * sizeof(unsigned));
-    unsigned* p1x2 = malloc(n * sizeof(unsigned));
-    double* xx1 = malloc(n * sizeof(double));
-    for(size_t i=0; i<n; i++){
-        p1x1[i] = p1[i] + x1[i];
-        p1x2[i] = p1[i] + x2[i];
-        xx1[i] = (double) x1[i];
-    }
-    double** lambdamu = LambdaMu(xx1, n);
-    double* v1 = malloc(n * sizeof(double));
-    double* v2 = malloc(n * sizeof(double));
-    double* v3 = malloc(n * sizeof(double));
-    double* v4 = malloc(n * sizeof(double));
-    double* v5 = malloc(n * sizeof(double));
-    double* v6 = malloc(n * sizeof(double));
-    double* v7 = malloc(n * sizeof(double));
-    double* v8 = malloc(n * sizeof(double));
-    double* w1 = malloc(n * sizeof(double));
-    double* w2 = malloc(n * sizeof(double));
-    double* w3 = malloc(n * sizeof(double));
-    double* w4 = malloc(n * sizeof(double));
-    double* w5 = malloc(n * sizeof(double));
-    double* w6 = malloc(n * sizeof(double));
-    // double v1[n]; double w1[n];
-    // double v2[n]; double w2[n];
-    // double v3[n]; double w3[n];
-    // double v4[n]; double w4[n];
-    // double v5[n]; double w5[n];
-    // double v6[n]; double w6[n];
-    // double v7[n]; double v8[n];
-    for(size_t i=0; i<n; i++){
-        v1[i] = (double) cubeco[p1x1[i]-2][0];
-        w1[i] = (double) cubeco[p1[i]-1][0];
-        v2[i] = (double) cubeco[p1x2[i]-2][0];
-        w2[i] = (double) cubeco[p1[i]][0];
-        v3[i] = (double) cubeco[p1x1[i]-2][1];
-        w3[i] = (double) cubeco[p1[i]][1];
-        v4[i] = (double) cubeco[p1x2[i]-2][1];
-        w4[i] = (double) cubeco[p1[i]+1][1];
-        v5[i] = (double) cubeco[p1x1[i]-2][2];
-        w5[i] = (double) cubeco[p1[i]][2];
-        v6[i] = (double) cubeco[p1x2[i]-2][2];
-        w6[i] = (double) cubeco[p1[i]+4][2];
-        v7[i] = values[p1x1[i]-2];
-        v8[i] = values[p1x2[i]-2];
-    }
-    free(p1x1);
-    free(p1x2);
-    double** out = malloc(8 * sizeof(double*));
-    out[0] = average(lambdamu, v1, w1, n); 
-    out[1] = average(lambdamu, v2, w2, n); 
-    out[2] = average(lambdamu, v3, w3, n); 
-    out[3] = average(lambdamu, v4, w4, n); 
-    out[4] = average(lambdamu, v5, w5, n); 
-    out[5] = average(lambdamu, v6, w6, n);
-    out[6] = average7(lambdamu, v7, n);
-    out[7] = average8(lambdamu, v8, n); 
-    freeMatrix_d(lambdamu,2);
-    free(v1); free(v2); free(v3); free(v4); free(v5); free(v6); free(v7); free(v8); 
-    free(w1); free(w2); free(w3); free(w4); free(w5); free(w6);
-    return(out);
-}
-
-double** CalPoints(double** points, size_t n){
-    double* x1 = points[0];
-    double* x2 = points[1];
-    double* y1 = points[2];
-    double* y2 = points[3];
-    double* z1 = points[4];
-    double* z2 = points[5];
-    double* v1 = points[6];
-    double* v2 = points[7];
-    double* x = malloc(n * sizeof(double));
-    double* y = malloc(n * sizeof(double));
-    double* z = malloc(n * sizeof(double));
-    for(size_t i=0; i<n; i++){
-        double s = v1[i]/(v1[i]-v2[i]);
-        x[i] = x1[i] + s*(x2[i]-x1[i]);
-        y[i] = y1[i] + s*(y2[i]-y1[i]);
-        z[i] = z1[i] + s*(z2[i]-z1[i]);
-    }
-    double** out = malloc(3 * sizeof(double*));
-    out[0] = x; out[1] = y; out[2] = z;
-    // free(x);free(y);free(z); NON
-    return(out);
-}
-
-
-double** xcomputeContour3d(
+double** computeContour3d(
     double*** voxel, 
     unsigned nx, unsigned ny, unsigned nz, 
     double max, 
     double level,
     size_t* ntriangles)
 {
-    unsigned edgesLengths[254] =   {3, 3, 6, 3, 0, 6, 9, 3, 6, 0, 9, 6, 9, 9, 6, 3, 6, 0, 9, 0, 
-                                0, 0, 12, 0, 9, 0, 12, 0, 12, 0, 9, 3, 0, 6, 9, 0, 0, 9, 12, 
-                                0, 0, 0, 12, 0, 0, 12, 9, 6, 9, 9, 6, 0, 0, 12, 9, 0, 12, 0, 
-                                9, 0, 0, 0, 6, 3, 0, 0, 0, 6, 0, 9, 12, 0, 0, 0, 0, 9, 12, 12, 
-                                9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 9, 12, 
-                                9, 0, 6, 9, 0, 0, 0, 0, 12, 0, 9, 6, 9, 12, 12, 9, 12, 0, 9, 
-                                6, 0, 0, 0, 0, 0, 0, 0, 3, 3, 0, 0, 0, 0, 0, 0, 0, 6, 9, 0, 12, 
-                                9, 12, 12, 9, 6, 9, 0, 12, 0, 0, 0, 0, 9, 6, 0, 9, 12, 9, 0, 
-                                6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 12, 12, 
-                                9, 0, 0, 0, 0, 12, 9, 0, 6, 0, 0, 0, 3, 6, 0, 0, 0, 9, 0, 12, 
-                                0, 9, 12, 0, 0, 6, 9, 9, 6, 9, 12, 0, 0, 12, 0, 0, 0, 12, 9, 
-                                0, 0, 9, 6, 0, 3, 9, 0, 12, 0, 12, 0, 9, 0, 12, 0, 0, 0, 9, 0, 
-                                6, 3, 6, 9, 9, 6, 9, 0, 6, 3, 9, 6, 0, 3, 6, 3, 3};
-
-    //ntriangles = malloc(sizeof(size_t));
     //printf("START");
     size_t nrow;
     unsigned** ijkt = levCells(voxel, nx, ny, nz, level, max, &nrow); 

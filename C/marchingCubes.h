@@ -5,16 +5,13 @@ void displayMatrix_u(unsigned**, unsigned, unsigned);
 
 void displayMatrix(double**, unsigned, unsigned);
 
-//int CaseRotationFlip[256][3];
+extern int CaseRotationFlip[256][3];
 
-//size_t indexArray[8][3];
+extern size_t indexArray[8][3];
 
-//unsigned** Edges;
+extern unsigned edgesLengths[254];
 
-//unsigned edgesLengths[254];
-
-
-// unsigned EdgePoints[13][3];
+extern unsigned EdgePoints[13][3];
 
 void freeMatrix_u(unsigned**, unsigned);
 
