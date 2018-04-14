@@ -23,7 +23,7 @@ fGoursat a b (x,y,z) =
   z4 = z2*z2
 
 voxel :: Double -> Double -> IO Voxel
-voxel a b = makeVoxel (fGoursat a b) ((-2.5,2.5),(-2.5,2.5),(-2.5,2.5)) (100, 100, 100)
+voxel a b = makeVoxel (fGoursat a b) ((-2.5,2.5),(-2.5,2.5),(-2.5,2.5)) (150, 150, 150)
 
 trianglesGoursat :: Double -> Double -> Double -> IO [NTriangle]
 trianglesGoursat a b l = do

@@ -179,7 +179,7 @@ size_t** kro1(size_t** M, unsigned nx, unsigned ny, size_t n){
 
 size_t** kro2(size_t** M, size_t nx, unsigned ny, unsigned n){
     size_t** out = malloc((nx*n+1) * sizeof(size_t*));
-    unsigned replicates[nx*n+1];
+    unsigned* replicates = malloc((nx*n+1) * sizeof(unsigned));
     unsigned count = 0;
     for(size_t i=0; i<nx; i++){
         for(unsigned m=0; m<n; m++){
@@ -193,6 +193,7 @@ size_t** kro2(size_t** M, size_t nx, unsigned ny, unsigned n){
             out[i][j] = M[replicates[i]][j];
         }
     }
+    free(replicates);
     out[nx*n] = malloc(ny * sizeof(size_t));
     for(unsigned j=0; j<ny; j++){
         out[nx*n][j] = 0;

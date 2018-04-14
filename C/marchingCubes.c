@@ -69,9 +69,10 @@ unsigned** levCells(double*** A, unsigned nx, unsigned ny, unsigned nz, double l
     size_t count=0;
     for(unsigned k=0; k<nz-1; k++){
         for(unsigned l=0; l<lengths[k]; l++){
-            out[0][count] = (cells[k][l]-1) % (nx-1) + 1;
-            out[1][count] = ((cells[k][l]-1) / (nx-1)) % (ny-1) + 1;
-            out[2][count] = (cells[k][l]-1) / ((nx-1) * (ny-1)) + 1;
+            unsigned c = cells[k][l]-1;
+            out[0][count] = c % (nx-1) + 1;
+            out[1][count] = (c / (nx-1)) % (ny-1) + 1;
+            out[2][count] = c / ((nx-1) * (ny-1)) + 1;
             out[3][count] = types[k][l];
             count++;  
         }
@@ -90,16 +91,22 @@ size_t** GetBasic1(unsigned* R, size_t nR, size_t** vivjvk, unsigned n){ // n = 
           indexPtr[i][j] = indexArray[i][j];
       }
   }
+  printf("GB1 - indexPtr done\n");
   size_t** cube1 = malloc(nR * sizeof(size_t*));
   for(size_t i=0; i<nR; i++){
       cube1[i] = malloc(3 * sizeof(size_t));
+      size_t* vivjvkRi = vivjvk[R[i]];
       for(unsigned j=0; j<3; j++){
-          cube1[i][j] = vivjvk[R[i]][j];
+          cube1[i][j] = vivjvkRi[j];
       }
   }
+  printf("GB1 - cube1 done\n");
   size_t** k1 = kro1(indexPtr, 8, 3, nR);
-  size_t** k2 = kro2(cube1, nR, 3, 8);
+  printf("GB1 - k1 done\n");
+  size_t** k2 = kro2(cube1, nR, 3, 8); // PROBLèME ICI
+  printf("GB1 - k2 done\n");
   size_t** cubeco = matricialSum(k1, k2, 8*nR, 3);
+  printf("GB1 - cubeco done\n");
   freeMatrix_s(indexPtr,8); 
   freeMatrix_s(cube1,nR); 
   freeMatrix_s(k1,24); 
@@ -117,8 +124,6 @@ double* GetBasic2(double*** A, double level, unsigned* R, size_t nR, size_t** vi
     freeMatrix_s(cubeco, 8*nR);
     return values;
 }
-
-
 
 unsigned* get_tcase(unsigned* types, size_t nrow){
     unsigned CRF[256] = 
@@ -252,16 +257,24 @@ double** GetPoints(size_t** cubeco, double* values, size_t* p1, unsigned* x1,
     free(p1x2);
     double** out = malloc(8 * sizeof(double*));
     out[0] = average(lambdamu, v1, w1, n); 
+    free(v1); free(w1);
     out[1] = average(lambdamu, v2, w2, n); 
+    free(v2); free(w2);
     out[2] = average(lambdamu, v3, w3, n); 
+    free(v3); free(w3);
     out[3] = average(lambdamu, v4, w4, n); 
+    free(v4); free(w4);
     out[4] = average(lambdamu, v5, w5, n); 
+    free(v5); free(w5);
     out[5] = average(lambdamu, v6, w6, n);
+    free(v6); free(w6);
     out[6] = average7(lambdamu, v7, n);
+    free(v7);
     out[7] = average8(lambdamu, v8, n); 
+    free(v8);
     freeMatrix_d(lambdamu,2);
-    free(v1); free(v2); free(v3); free(v4); free(v5); free(v6); free(v7); free(v8); 
-    free(w1); free(w2); free(w3); free(w4); free(w5); free(w6);
+    // free(v1); free(v2); free(v3); free(v4); free(v5); free(v6); free(v7); free(v8); 
+    // free(w1); free(w2); free(w3); free(w4); free(w5); free(w6);
     return(out);
 }
 
@@ -553,29 +566,34 @@ double** computeContour3d(
     double level,
     size_t* ntriangles)
 {
-    //printf("START");
+    printf("START");
     size_t nrow;
     unsigned** ijkt = levCells(voxel, nx, ny, nz, level, max, &nrow); 
-    //printf("ijkt[3][0]=%u\n", ijkt[3][0]);
+    printf("ijkt[3][0]=%u\n", ijkt[3][0]);
     unsigned* tcase = get_tcase(ijkt[3], nrow);
-    //printf("tcase[0]=%u\n", tcase[0]);
-    //printf("nrow: %zu\n", nrow);
+    printf("tcase[0]=%u\n", tcase[0]);
+    printf("nrow: %u\n", nrow);
     size_t nR;
     unsigned* R = getR(tcase, nrow, &nR);
-    //printf("getR done");
-    //printf("nR: %zu", nR);
+    free(tcase); 
+    printf("getR done\n");
+    printf("nR: %u\n", nR);
     if(nR == 0){
         return 0;
     }else{
         size_t** vivjvk = malloc(nrow * sizeof(size_t*));
+        printf("allocated vivjvk\n");
         for(size_t i=0; i<nrow; i++){
             vivjvk[i] = malloc(3 * sizeof(size_t));
             for(unsigned j=0; j<3; j++){
                 vivjvk[i][j] = (size_t) ijkt[j][i];
             }
         }
-        size_t** cubeco = GetBasic1(R, nR, vivjvk, 99999999);
+        printf("vivjvk done\n");
+        size_t** cubeco = GetBasic1(R, nR, vivjvk, 999);
+        printf("cubeco done\n");
         double* values = GetBasic2(voxel, level, R, nR, vivjvk);
+        freeMatrix_s(vivjvk,3); 
         size_t* p1 = malloc(nR * sizeof(size_t));
         for(size_t i=0; i<nR; i++){
             p1[i] = i*8 + 1; // -1 ou pas ?
@@ -585,6 +603,8 @@ double** computeContour3d(
         for(size_t i=0; i<nR; i++){
             cases[i] = vt[R[i]]-1; // -1 ou pas ?
         }
+        free(R);
+        freeMatrix_u(ijkt,4); 
         unsigned edgeslengths[nR];
         size_t totalLength = 0;
         for(size_t i=0; i<nR; i++){
@@ -592,10 +612,10 @@ double** computeContour3d(
             edgeslengths[i] = edgesLengths[cases[i]];
             totalLength += (size_t) edgeslengths[i];
         }
-        //printf("totalLength: %zu", totalLength);
+        printf("totalLength: %u", totalLength);
         *ntriangles = totalLength;
         size_t* p1rep = replicate(p1, edgeslengths, nR);
-        size_t edges[totalLength];
+        size_t* edges = malloc(totalLength * sizeof(size_t));
         size_t edgeiter = 0;
         for(size_t i=0; i<nR; i++){
             for(unsigned j=0; j<edgeslengths[i]; j++){
@@ -606,18 +626,17 @@ double** computeContour3d(
         unsigned* x1 = malloc(totalLength * sizeof(unsigned));
         unsigned* x2 = malloc(totalLength * sizeof(unsigned));
         for(size_t i=0; i<totalLength; i++){
-            x1[i] = EdgePoints[edges[i]-1][1];
-            x2[i] = EdgePoints[edges[i]-1][2];
+            unsigned* EPi = EdgePoints[edges[i]-1];
+            x1[i] = EPi[1];
+            x2[i] = EPi[2];
         }
+        free(edges);
         double** points = GetPoints(cubeco, values, p1rep, x1, x2, totalLength);
         // //printf("totalLength: %u\n", totalLength);
         double** triangles = CalPoints(points, totalLength);
         freeMatrix_d(points,8); 
         free(x1); free(x2);
-        freeMatrix_u(ijkt,4); 
         freeMatrix_s(cubeco,3); 
-        free(tcase); free(R);
-        freeMatrix_s(vivjvk,3); 
         return triangles;
     }
 
