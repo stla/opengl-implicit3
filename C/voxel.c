@@ -16,6 +16,7 @@ double*** voxel(
     unsigned nz
 )
 {
+    printf("VOXEL\n");
     double*** out = malloc(nx * sizeof(double**));
     for(unsigned i=0; i<nx; i++){
         out[i] = malloc(ny * sizeof(double*));

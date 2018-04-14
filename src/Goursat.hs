@@ -5,6 +5,7 @@ import           Data.IORef
 import           Graphics.Rendering.OpenGL.GL
 import           Graphics.UI.GLUT
 import           MarchingCubes
+import           System.IO.Unsafe
 import           Utils.OpenGL
 
 red :: Color4 GLfloat
@@ -22,12 +23,12 @@ fGoursat a b (x,y,z) =
   y4 = y2*y2
   z4 = z2*z2
 
-voxel :: Double -> Double -> IO Voxel
-voxel a b = makeVoxel (fGoursat a b) ((-2.5,2.5),(-2.5,2.5),(-2.5,2.5)) (150, 150, 150)
+voxel :: Double -> Double -> Voxel
+voxel a b = unsafePerformIO $ makeVoxel (fGoursat a b) ((-2.5,2.5),(-2.5,2.5),(-2.5,2.5)) (150, 150, 150)
 
 trianglesGoursat :: Double -> Double -> Double -> IO [NTriangle]
 trianglesGoursat a b l = do
-  vxl <- voxel a b
+  let vxl = voxel a b
   triangles <- computeContour3d'' vxl Nothing l
   return $ map fromTriangle triangles
 

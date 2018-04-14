@@ -579,6 +579,7 @@ double** computeContour3d(
     printf("getR done\n");
     printf("nR: %u\n", nR);
     if(nR == 0){
+        *ntriangles = 0;
         return 0;
     }else{
         size_t** vivjvk = malloc(nrow * sizeof(size_t*));
@@ -612,7 +613,7 @@ double** computeContour3d(
             edgeslengths[i] = edgesLengths[cases[i]];
             totalLength += (size_t) edgeslengths[i];
         }
-        printf("totalLength: %u", totalLength);
+        printf("totalLength: %u\n", totalLength);
         *ntriangles = totalLength;
         size_t* p1rep = replicate(p1, edgeslengths, nR);
         size_t* edges = malloc(totalLength * sizeof(size_t));

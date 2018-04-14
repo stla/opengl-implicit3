@@ -5,6 +5,7 @@ import           Data.IORef
 import           Graphics.Rendering.OpenGL.GL
 import           Graphics.UI.GLUT
 import           MarchingCubes
+import           System.IO.Unsafe
 import           Utils.OpenGL
 
 red :: Color4 GLfloat
@@ -16,13 +17,14 @@ fBretz (x,y,z) = ((x2+y2/4-1)*(x2/4+y2-1))^2 + z*z
   x2 = x*x
   y2 = y*y
 
-voxel :: IO Voxel
-voxel = makeVoxel fBretz ((-2.5,2.5),(-2.5,2.5),(-2.5,2.5)) (150, 150, 150)
+voxel :: Voxel
+{-# NOINLINE voxel #-}
+voxel = unsafePerformIO $ makeVoxel fBretz ((-2.5,2.5),(-2.5,2.5),(-2.5,2.5)) (150, 150, 150)
 
 trianglesBretz :: Double -> IO [NTriangle]
 trianglesBretz l = do
-  vxl <- voxel
-  triangles <- computeContour3d'' vxl Nothing l
+--  vxl <- voxel
+  triangles <- computeContour3d'' voxel Nothing l
   return $ map fromTriangle triangles
 
 display :: IORef GLfloat -> IORef GLfloat -> IORef GLfloat -- rotations
@@ -37,7 +39,7 @@ display rot1 rot2 rot3 l zoom = do
   z <- get zoom
   (_, size) <- get viewport
   l' <- get l
-  triangles <- trianglesBretz l'
+  triangles <- trianglesBretz (max l' 0.1)
   loadIdentity
   resize z size
   rotate r1 $ Vector3 1 0 0
