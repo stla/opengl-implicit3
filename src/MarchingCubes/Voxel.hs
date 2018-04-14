@@ -2,8 +2,8 @@
 module MarchingCubes.Voxel
   (makeVoxel, voxelMax, Voxel)
   where
-import Control.Monad ((=<<))
-import           Foreign.C.Types       
+import           Control.Monad         ((=<<))
+import           Foreign.C.Types
 -- import           Foreign.Marshal.Alloc (free, mallocBytes)
 import           Foreign.Marshal.Array (peekArray)
 import           Foreign.Ptr           (FunPtr, Ptr, freeHaskellFunPtr)
@@ -13,7 +13,7 @@ type Voxel = (Ptr (Ptr (Ptr CDouble)), (Int,Int,Int), ((Double,Double),(Double,D
 
 type CFunction = CDouble -> CDouble -> CDouble -> IO CDouble
 
-foreign import ccall "wrapper" functionPtr :: CFunction -> IO (FunPtr CFunction)
+foreign import ccall unsafe "wrapper" functionPtr :: CFunction -> IO (FunPtr CFunction)
 
 foreign import ccall "voxel" c_voxel
     :: FunPtr CFunction
@@ -39,21 +39,21 @@ makeVoxel :: ((Double,Double,Double) -> Double)
 makeVoxel fun ((xm,xM),(ym,yM),(zm,zM)) (nx, ny, nz) = do
     funPtr <- (functionPtr (fun2cfun fun))
     result <- c_voxel funPtr (realToFrac xm) (realToFrac xM)
-                             (realToFrac ym) (realToFrac yM) 
+                             (realToFrac ym) (realToFrac yM)
                              (realToFrac zm) (realToFrac zM)
                              (fromIntegral nx) (fromIntegral ny) (fromIntegral nz)
     freeHaskellFunPtr funPtr
     return (result, (nx,ny,nz), ((xm,xM),(ym,yM),(zm,zM)))
 
 voxel2tripleList :: Voxel -> IO [[[CDouble]]]
-voxel2tripleList (pppCDouble, (nx,ny,nz), _) = 
+voxel2tripleList (pppCDouble, (nx,ny,nz), _) =
     mapM (mapM (peekArray nz)) =<< (mapM (peekArray ny) =<< ((peekArray nx) pppCDouble))
     --- where n' = n-1
 
 voxelMax :: Voxel -> IO Double
-voxelMax voxel = do 
+voxelMax voxel = do
     tripleList <- voxel2tripleList voxel
-    return $ realToFrac $ maximum (concat . concat $ tripleList)    
+    return $ realToFrac $ maximum (concat . concat $ tripleList)
 
 test_fVoxel :: (Double,Double,Double) -> Double
 test_fVoxel (x,y,z) = x+y+z

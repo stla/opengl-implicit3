@@ -27,7 +27,7 @@ toTriangles trianglesAsList = map toTriangle (chunksOf 3 trianglesAsList)
       toTriplet _       = undefined
 
 
-foreign import ccall "computeContour3d" c_computeContour3d
+foreign import ccall unsafe "computeContour3d" c_computeContour3d
     :: Ptr (Ptr (Ptr CDouble))
     -> CUInt
     -> CUInt
