@@ -8,6 +8,10 @@ Goursat surface:
 
 ![Imgur](https://i.imgur.com/LCIEagk.png)
 
+Colored Goursat surface:
+
+![Imgur](https://i.imgur.com/hMAERyo.png)
+
 Orthocircle:
 
 ![Imgur](https://i.imgur.com/sh9MJyH.png)

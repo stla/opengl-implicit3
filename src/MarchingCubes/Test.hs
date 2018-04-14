@@ -1,12 +1,13 @@
 module MarchingCubes.Test
-  where 
-import Foreign.C.Types
-import Foreign
-import MarchingCubes.Voxel
-import MarchingCubes.ComputeContour3d
+  where
+import           Foreign
+import           Foreign.C.Types
+import           MarchingCubes.ComputeContour3d
+import           MarchingCubes.Utils.Triangles  (Triangle, XYZ)
+import           MarchingCubes.Voxel
 
-f :: (Double, Double, Double) -> Double
-f (x,y,z) = x*x + y*y + z*z 
+f :: XYZ -> Double
+f (x,y,z) = x*x + y*y + z*z
 
 vox :: IO Voxel
 vox = makeVoxel f ((-2,2),(-2,2),(-2,2)) (5,5,5)
@@ -17,7 +18,7 @@ vox = makeVoxel f ((-2,2),(-2,2),(-2,2)) (5,5,5)
 --     computeContour3d voxl (Just 100) 1
 
 test :: IO [Triangle]
-test = do 
+test = do
     vox <- makeVoxel f ((-2,2),(-2,2),(-2,2)) (50,50,50)
     computeContour3d' vox (Just 100) 1
-  
+

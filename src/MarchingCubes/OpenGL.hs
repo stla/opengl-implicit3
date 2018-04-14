@@ -1,8 +1,8 @@
 module MarchingCubes.OpenGL
   where
-import           Graphics.Rendering.OpenGL.GL (Vertex3 (..))
-import           MarchingCubes.ComputeContour3d  (Triangle)
-import           Utils.OpenGL                 (NTriangle, triangleNormal)
+import           Graphics.Rendering.OpenGL.GL  (Vertex3 (..))
+import           MarchingCubes.Utils.Triangles (Triangle)
+import           Utils.OpenGL                  (NTriangle, triangleNormal)
 
 fromTriangle :: Triangle -> NTriangle
 fromTriangle ((x1,y1,z1),(x2,y2,z2),(x3,y3,z3)) = (triangle, n)

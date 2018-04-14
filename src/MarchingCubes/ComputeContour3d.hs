@@ -1,31 +1,18 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 module MarchingCubes.ComputeContour3d
-  (computeContour3d, computeContour3d', computeContour3d'', XYZ, Triangle)
+  (computeContour3d, computeContour3d', computeContour3d'', computeContour3d''')
   where
-import           Control.Monad         (when, (=<<))
+import           Control.Monad                 ((=<<))
+import           Data.List                     (transpose)
+import           Data.Tuple.Extra              (fst3, snd3, thd3)
 import           Foreign.C.Types
-import           Foreign.Marshal.Alloc (free, mallocBytes)
-import           Foreign.Marshal.Array (peekArray)
-import           Foreign.Ptr           (Ptr)
-import           Foreign.Storable      (peek, sizeOf)
+import           Foreign.Marshal.Alloc         (free, mallocBytes)
+import           Foreign.Marshal.Array         (peekArray)
+import           Foreign.Ptr                   (Ptr)
+import           Foreign.Storable              (peek, sizeOf)
+import           MarchingCubes.Utils.Triangles (Triangle, toTriangles,
+                                                triangleNorm2Center)
 import           MarchingCubes.Voxel
--- import Data.Maybe
-import           Data.List             (transpose)
-import           Data.List.Split       (chunksOf)
-import           Data.Tuple.Extra      (fst3, snd3, thd3)
-
-type XYZ = (Double,Double,Double)
-type Triangle = (XYZ, XYZ, XYZ)
-
-toTriangles :: [[Double]] -> [Triangle]
-toTriangles trianglesAsList = map toTriangle (chunksOf 3 trianglesAsList)
-  where
-    toTriangle :: [[Double]] -> Triangle
-    toTriangle triangleAsList = toTriplet (map toTriplet triangleAsList)
-      where
-      toTriplet [x,y,z] = (x,y,z)
-      toTriplet _       = undefined
-
 
 foreign import ccall unsafe "computeContour3d" c_computeContour3d
     :: Ptr (Ptr (Ptr CDouble))
@@ -74,4 +61,11 @@ computeContour3d'' voxel voxmax level = do
         sx = s xm xM nx
         sy = s ym yM ny
         sz = s zm zM nz
+
+computeContour3d''' :: Voxel -> Maybe Double -> Double
+                    -> IO ([Triangle], Double)
+computeContour3d''' voxel voxmax level = do
+  triangles <- computeContour3d'' voxel voxmax level
+  let norm2max = maximum (map triangleNorm2Center triangles)
+  return (triangles, norm2max)
 

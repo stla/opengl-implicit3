@@ -1,13 +1,12 @@
-{-# LANGUAGE ForeignFunctionInterface #-}
 module Main
-  where 
-import Foreign.C.Types
-import Foreign
-import MarchingCubes.Voxel
-import MarchingCubes.ComputeContour3d
+  where
+import           Foreign
+import           Foreign.C.Types
+import           MarchingCubes.ComputeContour3d
+import           MarchingCubes.Voxel
 
 f :: (Double, Double, Double) -> Double
-f (x,y,z) = x*x + y*y + z*z 
+f (x,y,z) = x*x + y*y + z*z
 
 -- vox :: IO Voxel
 -- vox = makeVoxel f ((-2,2),(-2,2),(-2,2)) (5,5,5)
@@ -18,7 +17,7 @@ f (x,y,z) = x*x + y*y + z*z
 --     computeContour3d voxl (Just 12) 1
 
 -- test :: IO [Triangle]
--- test = do 
+-- test = do
 --     putStrLn "start"
 --     vox <- makeVoxel f ((-2,2),(-2,2),(-2,2)) (5,5,5)
 --     putStrLn "voxel done"
