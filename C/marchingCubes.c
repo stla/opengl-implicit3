@@ -566,7 +566,7 @@ double** computeContour3d(
     double level,
     size_t* ntriangles)
 {
-    printf("START");
+    printf("START\n");
     size_t nrow;
     unsigned** ijkt = levCells(voxel, nx, ny, nz, level, max, &nrow); 
     printf("ijkt[3][0]=%u\n", ijkt[3][0]);
