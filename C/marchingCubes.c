@@ -155,7 +155,8 @@ unsigned* getR(unsigned* tcase, size_t nrow, size_t* nR){
     for(size_t i=0; i<nrow; i++){
         ////printf("in loop\n");
         ////printf("tcase[%zu]=%u\n", i, tcase[i]);
-        if(tcase[i]==1 || tcase[i]==2 || tcase[i]==5 || tcase[i]==8 || tcase[i]==9 || tcase[i]==11 || tcase[i]==14){
+        unsigned tc = tcase[i];
+        if(tc==1 || tc==2 || tc==5 || tc==8 || tc==9 || tc==11 || tc==14){
             out[count] = (unsigned) i;
             count++;
             //printf("tcase matched\n");

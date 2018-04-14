@@ -19,7 +19,9 @@ fBretz (x,y,z) = ((x2+y2/4-1)*(x2/4+y2-1))^2 + z*z
 
 voxel :: Voxel
 {-# NOINLINE voxel #-}
-voxel = unsafePerformIO $ makeVoxel fBretz ((-2.5,2.5),(-2.5,2.5),(-0.5,0.5)) (150, 150, 150)
+voxel = unsafePerformIO $ makeVoxel fBretz
+                          ((-2.5,2.5),(-2.5,2.5),(-1,1))
+                          (200, 200, 200)
 
 trianglesBretz :: Double -> IO [NTriangle]
 trianglesBretz l = do
