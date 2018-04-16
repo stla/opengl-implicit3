@@ -1,4 +1,5 @@
 #include <stdio.h> // for printf
+#include <stdlib.h> // for abs (?)
 
 unsigned edges2Row0[] = {0};
 unsigned edges2Row1[] = {0};
@@ -614,7 +615,97 @@ unsigned facesRow252[] = {0};
 unsigned facesRow253[] = {0};
 unsigned (*Faces[])[] = {&facesRow0, &facesRow1, &facesRow2, &facesRow3, &facesRow4, &facesRow5, &facesRow6, &facesRow7, &facesRow8, &facesRow9, &facesRow10, &facesRow11, &facesRow12, &facesRow13, &facesRow14, &facesRow15, &facesRow16, &facesRow17, &facesRow18, &facesRow19, &facesRow20, &facesRow21, &facesRow22, &facesRow23, &facesRow24, &facesRow25, &facesRow26, &facesRow27, &facesRow28, &facesRow29, &facesRow30, &facesRow31, &facesRow32, &facesRow33, &facesRow34, &facesRow35, &facesRow36, &facesRow37, &facesRow38, &facesRow39, &facesRow40, &facesRow41, &facesRow42, &facesRow43, &facesRow44, &facesRow45, &facesRow46, &facesRow47, &facesRow48, &facesRow49, &facesRow50, &facesRow51, &facesRow52, &facesRow53, &facesRow54, &facesRow55, &facesRow56, &facesRow57, &facesRow58, &facesRow59, &facesRow60, &facesRow61, &facesRow62, &facesRow63, &facesRow64, &facesRow65, &facesRow66, &facesRow67, &facesRow68, &facesRow69, &facesRow70, &facesRow71, &facesRow72, &facesRow73, &facesRow74, &facesRow75, &facesRow76, &facesRow77, &facesRow78, &facesRow79, &facesRow80, &facesRow81, &facesRow82, &facesRow83, &facesRow84, &facesRow85, &facesRow86, &facesRow87, &facesRow88, &facesRow89, &facesRow90, &facesRow91, &facesRow92, &facesRow93, &facesRow94, &facesRow95, &facesRow96, &facesRow97, &facesRow98, &facesRow99, &facesRow100, &facesRow101, &facesRow102, &facesRow103, &facesRow104, &facesRow105, &facesRow106, &facesRow107, &facesRow108, &facesRow109, &facesRow110, &facesRow111, &facesRow112, &facesRow113, &facesRow114, &facesRow115, &facesRow116, &facesRow117, &facesRow118, &facesRow119, &facesRow120, &facesRow121, &facesRow122, &facesRow123, &facesRow124, &facesRow125, &facesRow126, &facesRow127, &facesRow128, &facesRow129, &facesRow130, &facesRow131, &facesRow132, &facesRow133, &facesRow134, &facesRow135, &facesRow136, &facesRow137, &facesRow138, &facesRow139, &facesRow140, &facesRow141, &facesRow142, &facesRow143, &facesRow144, &facesRow145, &facesRow146, &facesRow147, &facesRow148, &facesRow149, &facesRow150, &facesRow151, &facesRow152, &facesRow153, &facesRow154, &facesRow155, &facesRow156, &facesRow157, &facesRow158, &facesRow159, &facesRow160, &facesRow161, &facesRow162, &facesRow163, &facesRow164, &facesRow165, &facesRow166, &facesRow167, &facesRow168, &facesRow169, &facesRow170, &facesRow171, &facesRow172, &facesRow173, &facesRow174, &facesRow175, &facesRow176, &facesRow177, &facesRow178, &facesRow179, &facesRow180, &facesRow181, &facesRow182, &facesRow183, &facesRow184, &facesRow185, &facesRow186, &facesRow187, &facesRow188, &facesRow189, &facesRow190, &facesRow191, &facesRow192, &facesRow193, &facesRow194, &facesRow195, &facesRow196, &facesRow197, &facesRow198, &facesRow199, &facesRow200, &facesRow201, &facesRow202, &facesRow203, &facesRow204, &facesRow205, &facesRow206, &facesRow207, &facesRow208, &facesRow209, &facesRow210, &facesRow211, &facesRow212, &facesRow213, &facesRow214, &facesRow215, &facesRow216, &facesRow217, &facesRow218, &facesRow219, &facesRow220, &facesRow221, &facesRow222, &facesRow223, &facesRow224, &facesRow225, &facesRow226, &facesRow227, &facesRow228, &facesRow229, &facesRow230, &facesRow231, &facesRow232, &facesRow233, &facesRow234, &facesRow235, &facesRow236, &facesRow237, &facesRow238, &facesRow239, &facesRow240, &facesRow241, &facesRow242, &facesRow243, &facesRow244, &facesRow245, &facesRow246, &facesRow247, &facesRow248, &facesRow249, &facesRow250, &facesRow251, &facesRow252, &facesRow253};
 
-// 3D jagged array
+
+int* FacesNo7(int* faces, size_t* p1, double* values, size_t l){
+    unsigned* e1 = malloc(l * sizeof(unsigned));
+    unsigned* e2 = malloc(l * sizeof(unsigned));
+    unsigned* e3 = malloc(l * sizeof(unsigned));
+    unsigned* e4 = malloc(l * sizeof(unsigned));
+    for(unsigned i=0; i<l; i++){
+      int f = abs(faces[i])-1;
+      e1[i] = FacePoints[f][1];
+      e2[i] = FacePoints[f][2];
+      e3[i] = FacePoints[f][3];
+      e4[i] = FacePoints[f][4];
+    }
+    double* A = malloc(l * sizeof(double));
+    double* B = malloc(l * sizeof(double));
+    double* C = malloc(l * sizeof(double));
+    double* D = malloc(l * sizeof(double));
+    for(size_t i=0; i<l; i++){
+      size_t p = p1[i]-2; // -1 ?
+      A[i] = values[p+e1[i]];
+      B[i] = values[p+e2[i]];
+      C[i] = values[p+e3[i]];
+      D[i] = values[p+e4[i]];
+    } // on pourrait faire une seule loop... et pas de e1,e2,e3,e4
+    free(e1); free(e2); free(e3); free(e4);
+    int* index = malloc(l * sizeof(unsigned));
+    for(unsigned i=0; i<l; i++){
+      index[i] = faces[i]>0 ? 1 : -1;
+      index[i] *= (A[i]*B[i]-C[i]*D[i]>0 ? 1 : -1);
+      index[i] = index[i]==1 ? 1 : 0;
+    }
+    free(A); free(B); free(C); free(D);
+    return(index);
+}
+
+int* Faces7(int* faces, size_t* p1, double* values, size_t l){
+  // double* A0 = malloc(l * sizeof(double));
+  // double* B0 = malloc(l * sizeof(double));
+  // double* C0 = malloc(l * sizeof(double));
+  // double* D0 = malloc(l * sizeof(double));
+  // double* A1 = malloc(l * sizeof(double));
+  // double* B1 = malloc(l * sizeof(double));
+  // double* C1 = malloc(l * sizeof(double));
+  // double* D1 = malloc(l * sizeof(double));
+  // double* a = malloc(l * sizeof(double));
+  // double* b = malloc(l * sizeof(double));
+  // double* c = malloc(l * sizeof(double));
+  int* index = malloc(l * sizeof(unsigned));
+  for(size_t i=0; i<l; i++){
+    size_t p = p1[i] - 1;
+    // A0[i] = values[p];
+    // B0[i] = values[p+3];
+    // C0[i] = values[p+2];
+    // D0[i] = values[p+1];
+    // A1[i] = values[p+4];
+    // B1[i] = values[p+7];
+    // C1[i] = values[p+6];
+    // D1[i] = values[p+5];
+    double A0 = values[p];
+    double B0 = values[p+3];
+    double C0 = values[p+2];
+    double D0 = values[p+1];
+    double A1 = values[p+4];
+    double B1 = values[p+7];
+    double C1 = values[p+6];
+    double D1 = values[p+5];
+    // a[i] = (A1 - A0) * (C1 - C0) - (B1 - B0) * (D1 - D0);
+    // b[i] = C0 * (A1 - A0) + A0 * (C1 - C0) - D0 * (B1 - B0) - B0 * (D1 - D0);
+    // c[i] = A0 * C0 - B0 * D0;
+    double a = (A1 - A0) * (C1 - C0) - (B1 - B0) * (D1 - D0);
+    double b = C0 * (A1 - A0) + A0 * (C1 - C0) - D0 * (B1 - B0) - B0 * (D1 - D0);
+    double c = A0 * C0 - B0 * D0;
+    double tmax = -b/(2 * a);
+    double maximum = a * tmax*tmax + b * tmax + c;
+    printf("maximum: %f\n", maximum);
+// ?    maximum <- ifelse(maximum == "NaN", -1, maximum)
+    unsigned cond1 = a<0 ? 1 : 0;
+    unsigned cond2 = tmax>0 ? 1 : 0;
+    unsigned cond3 = tmax<1 ? 1 : 0;
+    unsigned cond4 = maximum>0 ? 1 : 0;
+    unsigned totalcond = cond1*cond2*cond3*cond4;
+    index[i] = faces[i]>0 ? 1 : -1;
+    index[i] *= (totalcond == 1 ? 1 : -1);
+    index[i] = index[i] == 1 ? 1 : 0;
+  }
+  // free(A0); free(A1); free(B0); free(B1); free(C0); free(C1); free(D0); free(D1);
+  // free(a); free(b); free(c);
+  return index;
+}
+
+// test 3D jagged array
 int jagged0_row0[] = {0,1};
 int jagged0_row1[] = {1,2,3};
 int (*jagged0[])[] = { &jagged0_row0, &jagged0_row1 };
@@ -624,6 +715,48 @@ int (*jagged1[])[] = { &jagged1_row0, &jagged1_row1 };
 int (*(*jagged[])[])[] = { &jagged0, &jagged1 };
 int main(){
   int x = (*(*jagged[0])[1])[1]; // expected: 2
-  printf("value: %d", x);
+  printf("value jagged array: %d\n", x);
+
+  printf("---\n");
+
+  printf("*test Faces7*\n");
+  size_t p1[16] = {1, 9, 17, 25, 33, 41, 49, 57, 65, 73, 81, 89, 97, 105, 113, 121};
+  int faces[16] = {-7, 7, -7, 7, 7, -7, 7, -7, -7, 7, -7, 7, 7, -7, 7, -7};
+  double values[193] = {0.75, 2.01, -0.36, 2.03, -2.22, 0.76, -1.31, -0.8, -1.79, -0.04,
+                        2.15, -1.77, 0.86, -1.72, 0.13, -0.08, 0.86, 0.34, -0.58, 0.79,
+                        -0.69, -1.18, 1.27, -0.31, 0.03, -1.48, -1.13, -1.76, -1.06,
+                        -1.34, 0.75, -0.64, 1.43, -0.62, 0.23, 0.26, 0.43, -1.48, 0.18,
+                        2.06, 0.73, -0.49, -0.48, 1.85, 0.52, -1.11, -0.31, 0.09, 0.64,
+                        0.37, 0.2, 1.18, -0.7, -0.61, -0.51, -0.82, -0.24, -0.77, 0.72,
+                        1.28, -0.99, -0.91, -1.32, 1.93, 0.68, -0.4, 0.19, 0.4, 1.64,
+                        -0.06, -0.32, -0.15, 0.7, 0.19, -1.23, -0.07, -0.79, -2.94, -0.63,
+                        -0.55, 1.49, 0.89, -0.33, -1.28, -0.01, 1.01, 0.4, 1.43, 0.14,
+                        -1.34, -0.49, -0.9, 0.32, 0.31, -1.04, 0.39, 0.8, -0.55, 0.18,
+                        0.04, -0.95, -1.82, 1.99, 0.82, -1, 0.56, -0.78, 0.68, -1.05,
+                        -0.7, -0.95, -0.19, 1.23, -1.36, -0.31, 1.07, -1.69, -0.45, -0.22,
+                        -2.05, -0.77, 1.23, 0.64, 1.03, -0.22, 1.14, 0.26, -0.5, 0.37,
+                        -1.14, 0.68, 0.77, -0.53, -1.12, -0.5, 0.35, -0.18, -3.15, -1.36,
+                        1.03, 2.58, -1.22, 0.59, 1.48, 0.59, -1.01, 0.65, 1.51, 0.11,
+                        0.16, -1.47, -1.87, -0.13, 0.01, -1.71, 0.52, 0.95, 1.48, 0.72,
+                        -0.98, -0.2, 1.2, -0.5, 2.19, -1.24, 0.62, -1.5, 1.35, 0.67,
+                        -0.66, -0.35, -0.17, 1.33, -0.23, -0.4, -0.67, -0.37, -2.78,
+                        1.53, 0.2, 0.09, -2.62, -1.36, 0.9, 0.25, 1.21, -0.15, 0.28,
+                        0.74, -0.51, 0.96, -2.18, 0};
+  unsigned* result = Faces7(faces, p1, values, 16);
+  for(unsigned i=0; i<16; i++){
+    printf("res[%u]=%u\n",i,result[i]);
+  }
+  free(result);
+
+  printf("---\n");
+  printf("*test FacesNo7*\n");
+  int faces2[16] = {5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5};
+  unsigned* result2 = FacesNo7(faces2, p1, values, 16);
+  for(unsigned i=0; i<16; i++){
+    printf("res2[%u]=%u\n",i,result2[i]);
+  }
+  free(result2);
+
+
   return 0;
 }
