@@ -27,6 +27,7 @@ library
                      , Utils.OpenGL
                      , Goursat
                      , Bretzel5
+                     , Bretzel5Colored
                      , Orthocircle
                      , Utils.Palettes
                      , GoursatColored
@@ -86,6 +87,18 @@ executable bretzel5
   hs-source-dirs:      src-exe
   main-is:             ExeBretzel5.hs
   ghc-options:         -fllvm -main-is ExeBretzel5
+  build-depends:       base >= 4.7 && < 5
+                     , opengl-implicit3
+  default-language:    Haskell2010
+
+executable bretzel5colored
+  if flag(exe)
+    buildable: True
+  else
+    buildable: False
+  hs-source-dirs:      src-exe
+  main-is:             ExeBretzel5Colored.hs
+  ghc-options:         -fllvm -main-is ExeBretzel5Colored
   build-depends:       base >= 4.7 && < 5
                      , opengl-implicit3
   default-language:    Haskell2010

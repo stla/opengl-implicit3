@@ -16,8 +16,7 @@ data Context = Context
     , contextRot3      :: IORef GLfloat
     , contextZoom      :: IORef Double
     , contextVoxel     :: IORef Voxel
-    , contextTriangles :: IORef ([Triangle], Double)
-    , contextColors    :: IORef [Color4 GLfloat]
+    , contextTriangles :: IORef ([Triangle], [Color4 GLfloat])
     }
 
 fGoursat :: Double -> Double -> XYZ -> Double
@@ -34,18 +33,20 @@ fGoursat a b (x,y,z) =
 
 voxel :: Double -> Double -> IO Voxel
 voxel a b = makeVoxel (fGoursat a b) ((-3,3),(-3,3),(-3,3))
-                      (100, 100, 100)
+                      (200, 200, 200)
 
-trianglesGoursat :: Voxel -> Double -> IO ([Triangle], Double)
-trianglesGoursat vxl = computeContour3d''' vxl Nothing
-
-funColor :: Int -> Double -> Triangle -> Color4 GLfloat
-funColor colormap dmax triangle = palette !! j
+trianglesGoursat :: Voxel -> Double -> IO ([Triangle], [Color4 GLfloat])
+trianglesGoursat vxl level = do
+  (triangles, d2max) <- computeContour3d''' vxl Nothing level
+  let colors = map (funColor d2max) triangles
+  return (triangles, colors)
   where
-    d = triangleNorm2Center triangle
-    j = floor (d*255/dmax)
-    palettes = ["inferno", "magma", "plasma", "viridis", "cviridis"]
-    palette = colorRamp' (palettes !! colormap) 256
+    funColor :: Double -> Triangle -> Color4 GLfloat
+    funColor dmax triangle = palette !! j
+      where
+      d = triangleNorm2Center triangle
+      j = floor (d*255/dmax)
+      palette = colorRamp' "inferno" 256
 
 display :: Context -> DisplayCallback
 display context = do
@@ -53,8 +54,7 @@ display context = do
   r1 <- get (contextRot1 context)
   r2 <- get (contextRot2 context)
   r3 <- get (contextRot3 context)
-  (triangles, _) <- get (contextTriangles context)
-  colors <- get (contextColors context)
+  (triangles, colors) <- get (contextTriangles context)
   zoom <- get (contextZoom context)
   (_, size) <- get viewport
   loadIdentity
@@ -89,12 +89,10 @@ keyboard :: IORef GLfloat -> IORef GLfloat -> IORef GLfloat -- rotations
          -> IORef Double -> IORef Double -- parameters a and b
          -> IORef Double -- isolevel
          -> IORef Voxel
-         -> IORef ([Triangle], Double)
-         -> IORef [Color4 GLfloat]
-         -> IORef Int -- color palette
+         -> IORef ([Triangle], [Color4 GLfloat])
          -> IORef Double -- zoom
          -> KeyboardCallback
-keyboard rot1 rot2 rot3 a b l voxelRef trianglesRef colorsRef p zoom c _ = do
+keyboard rot1 rot2 rot3 a b l voxelRef trianglesRef zoom c _ = do
   case c of
     'e' -> rot1 $~! subtract 2
     'r' -> rot1 $~! (+ 2)
@@ -152,11 +150,6 @@ keyboard rot1 rot2 rot3 a b l voxelRef trianglesRef colorsRef p zoom c _ = do
              vxl <- get voxelRef
              triangles <- trianglesGoursat vxl l'
              writeIORef trianglesRef triangles
-    'p' -> do
-             p $~! (\i -> (i+1) `mod` 5)
-             p' <- get p
-             (triangles, d2max) <- get trianglesRef
-             writeIORef colorsRef $ map (funColor p' d2max) triangles
     'q' -> leaveMainLoop
     _   -> return ()
   postRedisplay Nothing
@@ -189,17 +182,14 @@ main = do
   voxelRef <- newIORef vxl
   triangles <- trianglesGoursat vxl 2.0
   trianglesRef <- newIORef triangles
-  colorsRef <- newIORef (map (funColor 0 (snd triangles)) (fst triangles))
-  pRef <- newIORef 0
   displayCallback $= display Context {contextRot1 = rot1,
                                       contextRot2 = rot2,
                                       contextRot3 = rot3,
                                       contextZoom = zoom,
                                       contextVoxel = voxelRef,
-                                      contextTriangles = trianglesRef,
-                                      contextColors = colorsRef}
+                                      contextTriangles = trianglesRef}
   reshapeCallback $= Just (resize 0)
-  keyboardCallback $= Just (keyboard rot1 rot2 rot3 a b l voxelRef trianglesRef colorsRef pRef zoom)
+  keyboardCallback $= Just (keyboard rot1 rot2 rot3 a b l voxelRef trianglesRef zoom)
   idleCallback $= Nothing
   putStrLn "*** Goursat surface ***\n\
         \    To quit, press q.\n\
@@ -208,6 +198,5 @@ main = do
         \    Zoom: l, m\n\
         \    Increase/decrease parameters:\n\
         \        f, v, g, b, h, n\n\
-        \    Change color palette: p \n\
         \"
   mainLoop
