@@ -585,12 +585,12 @@ double** computeContour3d(
     printf("ijkt[3][0]=%u\n", ijkt[3][0]);
     unsigned* tcase = get_tcase(ijkt[3], nrow);
     printf("tcase[0]=%u\n", tcase[0]);
-    printf("nrow: %u\n", nrow);
+    printf("nrow: %zu\n", nrow);
     size_t nR;
     unsigned* R = getR(tcase, nrow, &nR);
     free(tcase);
     printf("getR done\n");
-    printf("nR: %u\n", nR);
+    printf("nR: %zu\n", nR);
     if(nR == 0){
         *ntriangles = 0;
         free(R);
@@ -628,7 +628,7 @@ double** computeContour3d(
             edgeslengths[i] = edgesLengths[cases[i]];
             totalLength += (size_t) edgeslengths[i];
         }
-        printf("totalLength: %u\n", totalLength);
+        printf("totalLength: %zu\n", totalLength);
         *ntriangles = totalLength;
         size_t* p1rep = replicate(p1, edgeslengths, nR);
         size_t* edges = malloc(totalLength * sizeof(size_t));
