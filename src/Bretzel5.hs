@@ -1,7 +1,6 @@
 module Bretzel5
   ( main )
   where
-import           Control.Monad                (when)
 import           Data.IORef
 import           Graphics.Rendering.OpenGL.GL
 import           Graphics.UI.GLUT
@@ -148,6 +147,3 @@ main = do
         \    Increase/decrease isolevel: h, n\n\
         \"
   mainLoop
-
-
-

@@ -34,7 +34,7 @@ fGoursat a b (x,y,z) =
 
 voxel :: Double -> Double -> IO Voxel
 voxel a b = makeVoxel (fGoursat a b) ((-3,3),(-3,3),(-3,3))
-                      (100, 100, 100)
+                      (200, 200, 200)
 
 trianglesGoursat :: Voxel -> Double -> IO ([Triangle], Double)
 trianglesGoursat vxl = computeContour3d''' vxl Nothing

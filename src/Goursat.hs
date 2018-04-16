@@ -1,4 +1,4 @@
-module Goursat2
+module Goursat
   ( main )
   where
 import           Data.IORef
