@@ -114,14 +114,25 @@ size_t** GetBasic1(unsigned* R, size_t nR, size_t** vivjvk, unsigned n){ // n = 
   return cubeco;
 }
 
-double* GetBasic2(double*** A, double level, unsigned* R, size_t nR, size_t** vivjvk){
-    size_t** cubeco = GetBasic1(R, nR, vivjvk, 999); // 999 useless ?
+// double* GetBasic2(double*** A, double level, unsigned* R, size_t nR, size_t** vivjvk){
+//     size_t** cubeco = GetBasic1(R, nR, vivjvk, 999); // 999 useless ?
+//     double* values = malloc((8*nR+1)*sizeof(double));
+//     for(size_t i=0; i<8*nR; i++){
+//         values[i] = A[cubeco[i][0]-1][cubeco[i][1]-1][cubeco[i][2]-1] - level;
+//     }
+//     values[8*nR] = 0;
+//     freeMatrix_s(cubeco, 8*nR);
+//     return values;
+// }
+
+double* GetBasic2prime(double*** A, double level, size_t** cubeco, size_t nR){
+//    size_t** cubeco = GetBasic1(R, nR, vivjvk, 999); // 999 useless ?
     double* values = malloc((8*nR+1)*sizeof(double));
     for(size_t i=0; i<8*nR; i++){
         values[i] = A[cubeco[i][0]-1][cubeco[i][1]-1][cubeco[i][2]-1] - level;
     }
     values[8*nR] = 0;
-    freeMatrix_s(cubeco, 8*nR);
+//    freeMatrix_s(cubeco, 8*nR);
     return values;
 }
 
@@ -594,7 +605,8 @@ double** computeContour3d(
         printf("vivjvk done\n");
         size_t** cubeco = GetBasic1(R, nR, vivjvk, 999);
         printf("cubeco done\n");
-        double* values = GetBasic2(voxel, level, R, nR, vivjvk);
+//        double* values = GetBasic2(voxel, level, R, nR, vivjvk);
+        double* values = GetBasic2prime(voxel, level, cubeco, nR);
         freeMatrix_s(vivjvk,3); 
         size_t* p1 = malloc(nR * sizeof(size_t));
         for(size_t i=0; i<nR; i++){

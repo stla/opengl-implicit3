@@ -25,3 +25,4 @@ cabal.project.local
 Goursat2.hs
 *.exe
 gallery/
+ztemp.hs
