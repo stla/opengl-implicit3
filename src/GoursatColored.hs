@@ -113,6 +113,8 @@ keyboard rot1 rot2 rot3 a b l voxelRef trianglesRef colorsRef p zoom c _ = do
              l' <- get l
              triangles <- trianglesGoursat vxl l'
              writeIORef trianglesRef triangles
+             p' <- get p
+             writeIORef colorsRef $ map (funColor p' (snd triangles)) (fst triangles)
     'v' -> do
              a $~! subtract 0.02
              a' <- get a
@@ -122,6 +124,8 @@ keyboard rot1 rot2 rot3 a b l voxelRef trianglesRef colorsRef p zoom c _ = do
              l' <- get l
              triangles <- trianglesGoursat vxl l'
              writeIORef trianglesRef triangles
+             p' <- get p
+             writeIORef colorsRef $ map (funColor p' (snd triangles)) (fst triangles)
     'g' -> do
              b $~! (+ 0.03)
              a' <- get a
@@ -131,6 +135,8 @@ keyboard rot1 rot2 rot3 a b l voxelRef trianglesRef colorsRef p zoom c _ = do
              l' <- get l
              triangles <- trianglesGoursat vxl l'
              writeIORef trianglesRef triangles
+             p' <- get p
+             writeIORef colorsRef $ map (funColor p' (snd triangles)) (fst triangles)
     'b' -> do
              b $~! subtract 0.03
              a' <- get a
@@ -140,18 +146,24 @@ keyboard rot1 rot2 rot3 a b l voxelRef trianglesRef colorsRef p zoom c _ = do
              l' <- get l
              triangles <- trianglesGoursat vxl l'
              writeIORef trianglesRef triangles
+             p' <- get p
+             writeIORef colorsRef $ map (funColor p' (snd triangles)) (fst triangles)
     'h' -> do
              l $~! (+ 0.25)
              l' <- get l
              vxl <- get voxelRef
              triangles <- trianglesGoursat vxl l'
              writeIORef trianglesRef triangles
+             p' <- get p
+             writeIORef colorsRef $ map (funColor p' (snd triangles)) (fst triangles)
     'n' -> do
              l $~! subtract 0.25
              l' <- get l
              vxl <- get voxelRef
              triangles <- trianglesGoursat vxl l'
              writeIORef trianglesRef triangles
+             p' <- get p
+             writeIORef colorsRef $ map (funColor p' (snd triangles)) (fst triangles)
     'p' -> do
              p $~! (\i -> (i+1) `mod` 5)
              p' <- get p
