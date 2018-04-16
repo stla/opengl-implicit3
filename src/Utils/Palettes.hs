@@ -1334,7 +1334,7 @@ colorRamp paletteName n =
     tab_r = tabulate umesh r
     tab_g = tabulate umesh g
     tab_b = tabulate umesh b
-    ats = [frac i n | i <- [1 .. n]]
+    ats = [frac i (n-1) | i <- [0 .. n-1]]
       where
         frac p q = realToFrac p / realToFrac q
     tbl_r = cubicSpline tab_r

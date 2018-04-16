@@ -1,12 +1,21 @@
-module Goursat
+module Goursat2
   ( main )
   where
 import           Data.IORef
 import           Graphics.Rendering.OpenGL.GL
 import           Graphics.UI.GLUT
 import           MarchingCubes
-import           System.IO.Unsafe
 import           Utils.OpenGL
+
+data Context = Context
+    {
+      contextRot1      :: IORef GLfloat
+    , contextRot2      :: IORef GLfloat
+    , contextRot3      :: IORef GLfloat
+    , contextZoom      :: IORef Double
+    , contextVoxel     :: IORef Voxel
+    , contextTriangles :: IORef [NTriangle]
+    }
 
 red :: Color4 GLfloat
 red = Color4 1 0 0 1
@@ -23,36 +32,26 @@ fGoursat a b (x,y,z) =
   y4 = y2*y2
   z4 = z2*z2
 
-voxel :: Double -> Double -> Voxel
-voxel a b = unsafePerformIO $
-            makeVoxel (fGoursat a b)
-            ((-2.5,2.5),(-2.5,2.5),(-2.5,2.5))
-            (200, 200, 200)
+voxel :: Double -> Double -> IO Voxel
+voxel a b = makeVoxel (fGoursat a b) ((-3,3),(-3,3),(-3,3))
+                      (100, 100, 100)
 
-trianglesGoursat :: Double -> Double -> Double -> IO [NTriangle]
-trianglesGoursat a b l = do
-  let vxl = voxel a b
+trianglesGoursat :: Voxel -> Double -> IO [NTriangle]
+trianglesGoursat vxl l = do
   triangles <- computeContour3d'' vxl Nothing l
   return $ map fromTriangle triangles
 
-display :: IORef GLfloat -> IORef GLfloat -> IORef GLfloat -- rotations
-        -> IORef Double -> IORef Double -- parameters a and b
-        -> IORef Double  -- isolevel
-        -> IORef Double  -- zoom
-        -> DisplayCallback
-display rot1 rot2 rot3 a b l zoom = do
+display :: Context -> DisplayCallback
+display context = do
   clear [ColorBuffer, DepthBuffer]
-  r1 <- get rot1
-  r2 <- get rot2
-  r3 <- get rot3
-  z <- get zoom
+  r1 <- get (contextRot1 context)
+  r2 <- get (contextRot2 context)
+  r3 <- get (contextRot3 context)
+  triangles <- get (contextTriangles context)
+  zoom <- get (contextZoom context)
   (_, size) <- get viewport
-  a' <- get a
-  b' <- get b
-  l' <- get l
-  triangles <- trianglesGoursat a' b' l'
   loadIdentity
-  resize z size
+  resize zoom size
   rotate r1 $ Vector3 1 0 0
   rotate r2 $ Vector3 0 1 0
   rotate r3 $ Vector3 0 0 1
@@ -81,9 +80,11 @@ resize zoom s@(Size w h) = do
 keyboard :: IORef GLfloat -> IORef GLfloat -> IORef GLfloat -- rotations
          -> IORef Double -> IORef Double -- parameters a and b
          -> IORef Double -- isolevel
+         -> IORef Voxel
+         -> IORef [NTriangle]
          -> IORef Double -- zoom
          -> KeyboardCallback
-keyboard rot1 rot2 rot3 a b l zoom c _ = do
+keyboard rot1 rot2 rot3 a b l voxelRef trianglesRef zoom c _ = do
   case c of
     'e' -> rot1 $~! subtract 2
     'r' -> rot1 $~! (+ 2)
@@ -93,18 +94,58 @@ keyboard rot1 rot2 rot3 a b l zoom c _ = do
     'i' -> rot3 $~! (+ 2)
     'm' -> zoom $~! (+ 1)
     'l' -> zoom $~! subtract 1
-    'f' -> a $~! (+ 0.02)
-    'v' -> a $~! subtract 0.02
-    'g' -> b $~! (+ 0.03)
-    'b' -> b $~! subtract 0.03
-    'h' -> l $~! (+ 0.1)
-    'n' -> l $~! subtract 0.1
+    'f' -> do
+             a $~! (+ 0.02)
+             a' <- get a
+             b' <- get b
+             vxl <- voxel a' b'
+             writeIORef voxelRef vxl
+             l' <- get l
+             triangles <- trianglesGoursat vxl l'
+             writeIORef trianglesRef triangles
+    'v' -> do
+             a $~! subtract 0.02
+             a' <- get a
+             b' <- get b
+             vxl <- voxel a' b'
+             writeIORef voxelRef vxl
+             l' <- get l
+             triangles <- trianglesGoursat vxl l'
+             writeIORef trianglesRef triangles
+    'g' -> do
+             b $~! (+ 0.03)
+             a' <- get a
+             b' <- get b
+             vxl <- voxel a' b'
+             writeIORef voxelRef vxl
+             l' <- get l
+             triangles <- trianglesGoursat vxl l'
+             writeIORef trianglesRef triangles
+    'b' -> do
+             b $~! subtract 0.03
+             a' <- get a
+             b' <- get b
+             vxl <- voxel a' b'
+             writeIORef voxelRef vxl
+             l' <- get l
+             triangles <- trianglesGoursat vxl l'
+             writeIORef trianglesRef triangles
+    'h' -> do
+             l $~! (+ 0.25)
+             l' <- get l
+             vxl <- get voxelRef
+             triangles <- trianglesGoursat vxl l'
+             writeIORef trianglesRef triangles
+    'n' -> do
+             l $~! subtract 0.25
+             l' <- get l
+             vxl <- get voxelRef
+             triangles <- trianglesGoursat vxl l'
+             writeIORef trianglesRef triangles
     'q' -> leaveMainLoop
     _   -> return ()
   postRedisplay Nothing
 
--- idle :: IdleCallback
--- idle = postRedisplay Nothing
 
 main :: IO ()
 main = do
@@ -130,10 +171,19 @@ main = do
   a <- newIORef (-0.27)
   b <- newIORef (-0.5)
   l <- newIORef 2.0
-  displayCallback $= display rot1 rot2 rot3 a b l zoom
+  vxl <- voxel (-0.27) (-0.5)
+  voxelRef <- newIORef vxl
+  triangles <- trianglesGoursat vxl 2.0
+  trianglesRef <- newIORef triangles
+  displayCallback $= display Context {contextRot1 = rot1,
+                                      contextRot2 = rot2,
+                                      contextRot3 = rot3,
+                                      contextZoom = zoom,
+                                      contextVoxel = voxelRef,
+                                      contextTriangles = trianglesRef}
   reshapeCallback $= Just (resize 0)
-  keyboardCallback $= Just (keyboard rot1 rot2 rot3 a b l zoom)
-  idleCallback $= Nothing -- Just idle
+  keyboardCallback $= Just (keyboard rot1 rot2 rot3 a b l voxelRef trianglesRef zoom)
+  idleCallback $= Nothing
   putStrLn "*** Goursat surface ***\n\
         \    To quit, press q.\n\
         \    Scene rotation:\n\

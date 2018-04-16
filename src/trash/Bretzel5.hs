@@ -1,22 +1,12 @@
 module Bretzel5
   ( main )
   where
-import           Control.Monad                (when)
 import           Data.IORef
 import           Graphics.Rendering.OpenGL.GL
 import           Graphics.UI.GLUT
 import           MarchingCubes
 import           System.IO.Unsafe
 import           Utils.OpenGL
-
-data Context = Context
-    {
-      contextRot1      :: IORef GLfloat
-    , contextRot2      :: IORef GLfloat
-    , contextRot3      :: IORef GLfloat
-    , contextZoom      :: IORef Double
-    , contextTriangles :: IORef [NTriangle]
-    }
 
 red :: Color4 GLfloat
 red = Color4 1 0 0 1
@@ -34,21 +24,26 @@ voxel = unsafePerformIO $ makeVoxel fBretz
                           (200, 200, 200)
 
 trianglesBretz :: Double -> IO [NTriangle]
-trianglesBretz level = do
-  triangles <- computeContour3d'' voxel Nothing level
+trianglesBretz l = do
+--  vxl <- voxel
+  triangles <- computeContour3d'' voxel Nothing l
   return $ map fromTriangle triangles
 
-display :: Context -> DisplayCallback
-display context = do
+display :: IORef GLfloat -> IORef GLfloat -> IORef GLfloat -- rotations
+        -> IORef Double  -- isolevel
+        -> IORef Double  -- zoom
+        -> DisplayCallback
+display rot1 rot2 rot3 l zoom = do
   clear [ColorBuffer, DepthBuffer]
-  r1 <- get (contextRot1 context)
-  r2 <- get (contextRot2 context)
-  r3 <- get (contextRot3 context)
-  triangles <- get (contextTriangles context)
-  zoom <- get (contextZoom context)
+  r1 <- get rot1
+  r2 <- get rot2
+  r3 <- get rot3
+  z <- get zoom
   (_, size) <- get viewport
+  l' <- get l
+  triangles <- trianglesBretz (max l' 0.1)
   loadIdentity
-  resize zoom size
+  resize z size
   rotate r1 $ Vector3 1 0 0
   rotate r2 $ Vector3 0 1 0
   rotate r3 $ Vector3 0 0 1
@@ -76,10 +71,9 @@ resize zoom s@(Size w h) = do
 
 keyboard :: IORef GLfloat -> IORef GLfloat -> IORef GLfloat -- rotations
          -> IORef Double -- isolevel
-         -> IORef [NTriangle]
          -> IORef Double -- zoom
          -> KeyboardCallback
-keyboard rot1 rot2 rot3 l trianglesRef zoom c _ = do
+keyboard rot1 rot2 rot3 l zoom c _ = do
   case c of
     'e' -> rot1 $~! subtract 2
     'r' -> rot1 $~! (+ 2)
@@ -89,20 +83,8 @@ keyboard rot1 rot2 rot3 l trianglesRef zoom c _ = do
     'i' -> rot3 $~! (+ 2)
     'm' -> zoom $~! (+ 1)
     'l' -> zoom $~! subtract 1
-    'h' -> do
-             l $~! (+ 0.1)
-             l' <- get l
-             triangles <- trianglesBretz l'
-             writeIORef trianglesRef triangles
-    'n' -> do
-             l $~! (\x -> if x>0.1 then x-0.1 else x)
-             l' <- get l
-             putStrLn ("l': " ++ show l')
-             if l'>1e-16
-              then do
-               triangles <- trianglesBretz l'
-               writeIORef trianglesRef triangles
-              else l $~! (+ 0.1)
+    'h' -> l $~! (+ 0.1)
+    'n' -> l $~! subtract 0.1
     'q' -> leaveMainLoop
     _   -> return ()
   postRedisplay Nothing
@@ -128,17 +110,11 @@ main = do
   rot1 <- newIORef 0.0
   rot2 <- newIORef 0.0
   rot3 <- newIORef 0.0
-  level <- newIORef 0.1
   zoom <- newIORef 0.0
-  triangles <- trianglesBretz 0.1
-  trianglesRef <- newIORef triangles
-  displayCallback $= display Context {contextRot1 = rot1,
-                                      contextRot2 = rot2,
-                                      contextRot3 = rot3,
-                                      contextZoom = zoom,
-                                      contextTriangles = trianglesRef}
+  l <- newIORef 0.1
+  displayCallback $= display rot1 rot2 rot3 l zoom
   reshapeCallback $= Just (resize 0)
-  keyboardCallback $= Just (keyboard rot1 rot2 rot3 level trianglesRef zoom)
+  keyboardCallback $= Just (keyboard rot1 rot2 rot3 l zoom)
   idleCallback $= Nothing
   putStrLn "*** Bretzel ***\n\
         \    To quit, press q.\n\
@@ -148,6 +124,3 @@ main = do
         \    Increase/decrease isolevel: h, n\n\
         \"
   mainLoop
-
-
-
