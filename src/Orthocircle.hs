@@ -7,6 +7,16 @@ import           Graphics.UI.GLUT
 import           MarchingCubes
 import           Utils.OpenGL
 
+data Context = Context
+    {
+      contextRot1      :: IORef GLfloat
+    , contextRot2      :: IORef GLfloat
+    , contextRot3      :: IORef GLfloat
+    , contextZoom      :: IORef Double
+    , contextVoxel     :: IORef Voxel
+    , contextTriangles :: IORef [NTriangle]
+    }
+
 whitesmoke :: Color4 GLfloat
 whitesmoke = Color4 0.96 0.96 0.96 1
 
@@ -27,30 +37,22 @@ voxel a b = makeVoxel (fOrthocircle a b)
                       ((-1.3,1.3),(-1.3,1.3),(-1.3,1.3))
                       (300, 300, 300)
 
-trianglesOrthocircle :: Double -> Double -> Double -> IO [NTriangle]
-trianglesOrthocircle a b l = do
-  vxl <- voxel a b
+trianglesOrthocircle :: Voxel -> Double -> IO [NTriangle]
+trianglesOrthocircle vxl l = do
   triangles <- computeContour3d'' vxl Nothing l
   return $ map fromTriangle triangles
 
-display :: IORef GLfloat -> IORef GLfloat -> IORef GLfloat -- rotations
-        -> IORef Double -> IORef Double -- parameters a and b
-        -> IORef Double  -- isolevel
-        -> IORef Double  -- zoom
-        -> DisplayCallback
-display rot1 rot2 rot3 a b l zoom = do
+display :: Context -> DisplayCallback
+display context = do
   clear [ColorBuffer, DepthBuffer]
-  r1 <- get rot1
-  r2 <- get rot2
-  r3 <- get rot3
-  z <- get zoom
+  r1 <- get (contextRot1 context)
+  r2 <- get (contextRot2 context)
+  r3 <- get (contextRot3 context)
+  triangles <- get (contextTriangles context)
+  zoom <- get (contextZoom context)
   (_, size) <- get viewport
-  a' <- get a
-  b' <- get b
-  l' <- get l
-  triangles <- trianglesOrthocircle a' b' l'
   loadIdentity
-  resize z size
+  resize zoom size
   rotate r1 $ Vector3 1 0 0
   rotate r2 $ Vector3 0 1 0
   rotate r3 $ Vector3 0 0 1
@@ -80,9 +82,11 @@ resize zoom s@(Size w h) = do
 keyboard :: IORef GLfloat -> IORef GLfloat -> IORef GLfloat -- rotations
          -> IORef Double -> IORef Double -- parameters a and b
          -> IORef Double -- isolevel
+         -> IORef Voxel
+         -> IORef [NTriangle]
          -> IORef Double -- zoom
          -> KeyboardCallback
-keyboard rot1 rot2 rot3 a b l zoom c _ = do
+keyboard rot1 rot2 rot3 a b l voxelRef trianglesRef zoom c _ = do
   case c of
     'e' -> rot1 $~! subtract 2
     'r' -> rot1 $~! (+ 2)
@@ -92,12 +96,54 @@ keyboard rot1 rot2 rot3 a b l zoom c _ = do
     'i' -> rot3 $~! (+ 2)
     'm' -> zoom $~! (+ 1)
     'l' -> zoom $~! subtract 1
-    'f' -> a $~! (+ 0.025)
-    'v' -> a $~! subtract 0.025
-    'g' -> b $~! (+ 0.1)
-    'b' -> b $~! subtract 0.1
-    'h' -> l $~! (+ 0.02)
-    'n' -> l $~! subtract 0.02
+    'f' -> do
+             a $~! (+ 0.025)
+             a' <- get a
+             b' <- get b
+             vxl <- voxel a' b'
+             writeIORef voxelRef vxl
+             l' <- get l
+             triangles <- trianglesOrthocircle vxl l'
+             writeIORef trianglesRef triangles
+    'v' -> do
+             a $~! subtract 0.025
+             a' <- get a
+             b' <- get b
+             vxl <- voxel a' b'
+             writeIORef voxelRef vxl
+             l' <- get l
+             triangles <- trianglesOrthocircle vxl l'
+             writeIORef trianglesRef triangles
+    'g' -> do
+             b $~! (+ 0.1)
+             a' <- get a
+             b' <- get b
+             vxl <- voxel a' b'
+             writeIORef voxelRef vxl
+             l' <- get l
+             triangles <- trianglesOrthocircle vxl l'
+             writeIORef trianglesRef triangles
+    'b' -> do
+             b $~! subtract 0.1
+             a' <- get a
+             b' <- get b
+             vxl <- voxel a' b'
+             writeIORef voxelRef vxl
+             l' <- get l
+             triangles <- trianglesOrthocircle vxl l'
+             writeIORef trianglesRef triangles
+    'h' -> do
+             l $~! (+ 0.02)
+             l' <- get l
+             vxl <- get voxelRef
+             triangles <- trianglesOrthocircle vxl l'
+             writeIORef trianglesRef triangles
+    'n' -> do
+             l $~! subtract 0.02
+             l' <- get l
+             vxl <- get voxelRef
+             triangles <- trianglesOrthocircle vxl l'
+             writeIORef trianglesRef triangles
     'q' -> leaveMainLoop
     _   -> return ()
   postRedisplay Nothing
@@ -109,7 +155,6 @@ main = do
   _ <- createWindow "Orthocircle"
   windowSize $= Size 400 400
   initialDisplayMode $= [RGBAMode, DoubleBuffered, WithDepthBuffer]
-  -- cullFace $= Just Back
   clearColor $= black
   materialAmbient FrontAndBack $= white
   lighting $= Enabled
@@ -128,9 +173,18 @@ main = do
   a <- newIORef 0.075
   b <- newIORef 3.0
   l <- newIORef 0.0
-  displayCallback $= display rot1 rot2 rot3 a b l zoom
+  vxl <- voxel 0.075 3.0
+  voxelRef <- newIORef vxl
+  triangles <- trianglesOrthocircle vxl 0.0
+  trianglesRef <- newIORef triangles
+  displayCallback $= display Context {contextRot1 = rot1,
+                                      contextRot2 = rot2,
+                                      contextRot3 = rot3,
+                                      contextZoom = zoom,
+                                      contextVoxel = voxelRef,
+                                      contextTriangles = trianglesRef}
   reshapeCallback $= Just (resize 0)
-  keyboardCallback $= Just (keyboard rot1 rot2 rot3 a b l zoom)
+  keyboardCallback $= Just (keyboard rot1 rot2 rot3 a b l voxelRef trianglesRef zoom)
   idleCallback $= Nothing
   putStrLn "*** Orthocircle ***\n\
         \    To quit, press q.\n\
@@ -138,6 +192,8 @@ main = do
         \        e, r, t, y, u, i\n\
         \    Zoom: l, m\n\
         \    Increase/decrease parameters:\n\
-        \        f, v, g, b, h, n\n\
+        \        f, v, g, b\n\
+        \    Increase/decrease isolevel:\n\
+        \        h, n\n\
         \"
   mainLoop

@@ -207,7 +207,9 @@ main = do
         \        e, r, t, y, u, i\n\
         \    Zoom: l, m\n\
         \    Increase/decrease parameters:\n\
-        \        f, v, g, b, h, n\n\
-        \    Change color palette: p \n\
+        \        f, v, g, b\n\
+        \    Increase/decrease isolevel:\n\
+        \        h, n\n\
+        \    Change color palette: p (this takes a while...) \n\
         \"
   mainLoop
