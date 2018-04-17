@@ -404,6 +404,7 @@ double** computeContour3d(
           printf("!!! there are special cases !!! (%u)", special);
         }
 
+        // faire un malloc(0) pour new triangles
         // unsigned* is3 = malloc(nrow * sizeof(unsigned));
         // size_t nR3=0;
         // for(size_t i=0; i<nrow; i++){

@@ -75,6 +75,9 @@ double*** voxel(double (*f)(double, double, double),
                 double, double, double, double, double, double,
                 unsigned, unsigned, unsigned);
 
+
 /* Special cases */
 
 extern int (*Faces[])[];
+
+extern unsigned FacesSizes[254];

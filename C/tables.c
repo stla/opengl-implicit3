@@ -829,3 +829,17 @@ unsigned (*Faces[])[] = {&facesRow0, &facesRow1, &facesRow2, &facesRow3, &facesR
    &facesRow182, &facesRow183, &facesRow184, &facesRow185, &facesRow186, &facesRow187, &facesRow188, &facesRow189, &facesRow190, &facesRow191, &facesRow192, &facesRow193, &facesRow194, &facesRow195, &facesRow196, &facesRow197, &facesRow198, &facesRow199, &facesRow200, &facesRow201, &facesRow202, &facesRow203, &facesRow204, &facesRow205, &facesRow206, &facesRow207, &facesRow208, &facesRow209, &facesRow210, &facesRow211, &facesRow212, &facesRow213, &facesRow214, &facesRow215, &facesRow216,
    &facesRow217, &facesRow218, &facesRow219, &facesRow220, &facesRow221, &facesRow222, &facesRow223, &facesRow224, &facesRow225, &facesRow226, &facesRow227, &facesRow228, &facesRow229, &facesRow230, &facesRow231, &facesRow232, &facesRow233, &facesRow234, &facesRow235, &facesRow236, &facesRow237, &facesRow238, &facesRow239, &facesRow240, &facesRow241, &facesRow242, &facesRow243, &facesRow244, &facesRow245, &facesRow246, &facesRow247, &facesRow248, &facesRow249, &facesRow250, &facesRow251,
    &facesRow252, &facesRow253};
+
+unsigned FacesSizes[254] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                            2, 2, 1, 1, 1, 4, 1, 2, 1, 3, 1, 1, 1, 1, 1, 1, 4, 1, 1, 1, 2,
+                            2, 1, 2, 3, 1, 1, 1, 1, 1, 1, 2, 3, 1, 1, 2, 1, 3, 1, 3, 2, 2,
+                            1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 4, 3, 1, 1, 1, 1, 1, 2, 4, 3,
+                            2, 3, 3, 2, 4, 3, 7, 4, 3, 2, 4, 1, 1, 2, 1, 1, 1, 3, 1, 1, 2,
+                            3, 3, 2, 1, 2, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 3, 2, 4, 1, 2, 1,
+                            1, 1, 1, 1, 1, 2, 1, 4, 2, 3, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 2,
+                            1, 2, 3, 3, 2, 1, 1, 3, 1, 1, 1, 2, 1, 1, 4, 2, 3, 4, 7, 3, 4,
+                            2, 3, 3, 2, 3, 4, 2, 1, 1, 1, 1, 1, 3, 4, 2, 1, 1, 1, 2, 1, 2,
+                            1, 1, 1, 1, 2, 2, 3, 1, 3, 1, 2, 1, 1, 3, 2, 1, 1, 1, 1, 1, 1,
+                            3, 2, 1, 2, 2, 1, 1, 1, 4, 1, 1, 1, 1, 1, 1, 3, 1, 2, 1, 4, 1,
+                            1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                            1, 1, 1};
