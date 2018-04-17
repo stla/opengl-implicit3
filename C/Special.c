@@ -405,6 +405,87 @@ unsigned (*specialpos6[])[] = {&specialpos6Row0, &specialpos6Row1, &specialpos6R
 unsigned (*(*special_pos[])[])[] = {&specialpos0, &specialpos1, &specialpos2, &specialpos3, &specialpos4, &specialpos5, &specialpos6};
 // see the main file to access to pos[[i]][[j]][k]
 
+// in table.c
+unsigned specialposSize0Row0 = 6;
+unsigned specialposSize0Row1 = 12;
+unsigned* specialposSize0[] = {&specialposSize0Row0, &specialposSize0Row1};
+unsigned specialposSize1Row0 = 6;
+unsigned specialposSize1Row1 = 18;
+unsigned* specialposSize1[] = {&specialposSize1Row0, &specialposSize1Row1};
+unsigned specialposSize2Row0 = 9;
+unsigned specialposSize2Row1 = 24;
+unsigned specialposSize2Row2 = 15;
+unsigned specialposSize2Row3 = 15;
+unsigned* specialposSize2[] = {&specialposSize2Row0, &specialposSize2Row1, &specialposSize2Row2, &specialposSize2Row3};
+unsigned specialposSize3Row0 = 9;
+unsigned specialposSize3Row1 = 9;
+unsigned specialposSize3Row2 = 15;
+unsigned specialposSize3Row3 = 15;
+unsigned specialposSize3Row4 = 15;
+unsigned specialposSize3Row5 = 15;
+unsigned specialposSize3Row6 = 15;
+unsigned specialposSize3Row7 = 15;
+unsigned specialposSize3Row8 = 27;
+unsigned specialposSize3Row9 = 27;
+unsigned specialposSize3Row10 = 27;
+unsigned specialposSize3Row11 = 27;
+unsigned specialposSize3Row12 = 27;
+unsigned specialposSize3Row13 = 27;
+unsigned specialposSize3Row14 = 15;
+unsigned specialposSize3Row15 = 27;
+unsigned* specialposSize3[] = {&specialposSize3Row0, &specialposSize3Row1, &specialposSize3Row2, &specialposSize3Row3, &specialposSize3Row4, &specialposSize3Row5, &specialposSize3Row6, &specialposSize3Row7, &specialposSize3Row8, &specialposSize3Row9, &specialposSize3Row10, &specialposSize3Row11, &specialposSize3Row12, &specialposSize3Row13, &specialposSize3Row14, &specialposSize3Row15};
+unsigned specialposSize4Row0 = 12;
+unsigned specialposSize4Row1 = 24;
+unsigned specialposSize4Row2 = 24;
+unsigned specialposSize4Row3 = 24;
+unsigned specialposSize4Row4 = 24;
+unsigned specialposSize4Row5 = 24;
+unsigned specialposSize4Row6 = 12;
+unsigned specialposSize4Row7 = 12;
+unsigned* specialposSize4[] = {&specialposSize4Row0, &specialposSize4Row1, &specialposSize4Row2, &specialposSize4Row3, &specialposSize4Row4, &specialposSize4Row5, &specialposSize4Row6, &specialposSize4Row7};
+unsigned specialposSize5Row0 = 12;
+unsigned specialposSize5Row1 = 24;
+unsigned specialposSize5Row2 = 24;
+unsigned specialposSize5Row3 = 24;
+unsigned specialposSize5Row4 = 24;
+unsigned specialposSize5Row5 = 24;
+unsigned specialposSize5Row6 = 12;
+unsigned specialposSize5Row7 = 12;
+unsigned* specialposSize5[] = {&specialposSize5Row0, &specialposSize5Row1, &specialposSize5Row2, &specialposSize5Row3, &specialposSize5Row4, &specialposSize5Row5, &specialposSize5Row6, &specialposSize5Row7};
+unsigned specialposSize6Row0 = 12;
+unsigned specialposSize6Row1 = 18;
+unsigned specialposSize6Row2 = 18;
+unsigned specialposSize6Row3 = 18;
+unsigned specialposSize6Row4 = 18;
+unsigned specialposSize6Row5 = 18;
+unsigned specialposSize6Row6 = 18;
+unsigned specialposSize6Row7 = 30;
+unsigned specialposSize6Row8 = 30;
+unsigned specialposSize6Row9 = 30;
+unsigned specialposSize6Row10 = 30;
+unsigned specialposSize6Row11 = 30;
+unsigned specialposSize6Row12 = 30;
+unsigned specialposSize6Row13 = 30;
+unsigned specialposSize6Row14 = 30;
+unsigned specialposSize6Row15 = 30;
+unsigned specialposSize6Row16 = 30;
+unsigned specialposSize6Row17 = 30;
+unsigned specialposSize6Row18 = 30;
+unsigned specialposSize6Row19 = 36;
+unsigned specialposSize6Row20 = 36;
+unsigned specialposSize6Row21 = 36;
+unsigned specialposSize6Row22 = 36;
+unsigned specialposSize6Row23 = 18;
+unsigned specialposSize6Row24 = 18;
+unsigned specialposSize6Row25 = 18;
+unsigned specialposSize6Row26 = 18;
+unsigned specialposSize6Row27 = 30;
+unsigned specialposSize6Row28 = 30;
+unsigned specialposSize6Row29 = 30;
+unsigned specialposSize6Row30 = 30;
+unsigned* specialposSize6[] = {&specialposSize6Row0, &specialposSize6Row1, &specialposSize6Row2, &specialposSize6Row3, &specialposSize6Row4, &specialposSize6Row5, &specialposSize6Row6, &specialposSize6Row7, &specialposSize6Row8, &specialposSize6Row9, &specialposSize6Row10, &specialposSize6Row11, &specialposSize6Row12, &specialposSize6Row13, &specialposSize6Row14, &specialposSize6Row15, &specialposSize6Row16, &specialposSize6Row17, &specialposSize6Row18, &specialposSize6Row19, &specialposSize6Row20, &specialposSize6Row21, &specialposSize6Row22, &specialposSize6Row23, &specialposSize6Row24, &specialposSize6Row25, &specialposSize6Row26, &specialposSize6Row27, &specialposSize6Row28, &specialposSize6Row29, &specialposSize6Row30};
+unsigned* (*(special_posSize)[])[] = {&specialposSize0, &specialposSize1, &specialposSize2, &specialposSize3, &specialposSize4, &specialposSize5, &specialposSize6};
+
 // already in tables.c
 unsigned FacePoints[6][6] =
   {{1, 1, 6, 2, 5, 60},
@@ -858,6 +939,44 @@ unsigned** cbind(unsigned** M, unsigned* v1, unsigned* v2, unsigned nrow, unsign
     return out;
 }
 
+// not tested - copied in utils.c
+unsigned** subsetMatrix(unsigned** M, unsigned* rows, unsigned* cols, unsigned nrows, unsigned ncols){
+  unsigned** out = malloc(nrows * sizeof(unsigned*));
+  for(unsigned i=0; i<nrows; i++){
+    out[i] = malloc(ncols * sizeof(unsigned));
+    for(unsigned j=0; j<ncols; j++){
+      out[i][j] = M[rows[i]][cols[j]];
+    }
+  }
+  return out;
+}
+
+// not tested
+unsigned* whichEqual(unsigned* v, unsigned x, unsigned lv, unsigned* outlength){
+  short* flag = malloc(lv * sizeof(short));
+  unsigned count = 0;
+  for(unsigned i=0; i<lv; i++){
+    if(v[i]==x){
+      flag[i] = 1;
+      count++;
+    }else{
+      flag[i] = 0;
+    }
+  }
+  *outlength = count;
+  unsigned* out = malloc(count * sizeof(unsigned));
+  count = 0;
+  for(unsigned i=0; i<lv; i++){
+    if(flag[i]){
+      out[count] = i;
+      count++;
+    }
+  }
+  free(flag);
+  return(out);
+}
+
+
 /* -------- TESTS -------------------- */
 // test 3D jagged array
 int jagged0_row0[] = {0,1};
@@ -940,6 +1059,11 @@ int main(){
     printf("\n");
   }
   free(Mat[0]);free(Mat[1]);free(Mat[2]);free(Mat[3]);free(Mat);
+
+  printf("---\n");
+  printf("*test special_posSize*\n");
+  unsigned s = *(*(special_posSize)[1])[1];
+  printf("s=%u\n", s);
 
   return 0;
 }

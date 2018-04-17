@@ -300,3 +300,39 @@ unsigned** cbind(unsigned** M, size_t* v1, unsigned* v2, unsigned nrow, unsigned
     }
     return out;
 }
+
+unsigned** subsetMatrix(unsigned** M, unsigned* rows, unsigned* cols, unsigned nrows, unsigned ncols){
+  unsigned** out = malloc(nrows * sizeof(unsigned*));
+  for(unsigned i=0; i<nrows; i++){
+    out[i] = malloc(ncols * sizeof(unsigned));
+    for(unsigned j=0; j<ncols; j++){
+      out[i][j] = M[rows[i]][cols[j]];
+    }
+  }
+  return out;
+}
+
+// not tested
+unsigned* whichEqual(unsigned* v, unsigned x, unsigned lv, unsigned* outlength){
+  short* flag = malloc(lv * sizeof(short));
+  unsigned count = 0;
+  for(unsigned i=0; i<lv; i++){
+    if(v[i]==x){
+      flag[i] = 1;
+      count++;
+    }else{
+      flag[i] = 0;
+    }
+  }
+  *outlength = count;
+  unsigned* out = malloc(count * sizeof(unsigned));
+  count = 0;
+  for(unsigned i=0; i<lv; i++){
+    if(flag[i]){
+      out[count] = i;
+      count++;
+    }
+  }
+  free(flag);
+  return(out);
+}

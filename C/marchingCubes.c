@@ -453,6 +453,28 @@ double** computeContour3d(
           unsigned** edges3 = vector2matrix(unlisted_edges3, outlength3, nedge);
           unsigned** edgesp1index = cbind(edges3, p13, index3, nR3, nedge);
           printf("edgesp1index[191][19]=%u\n", edgesp1index[191][19]);
+          unsigned ind3Size = special_indSizes[0];
+          unsigned ind3[ind3Size];
+          for(unsigned i=0; i<ind3Size; i++){
+            ind3[i] = (*special_ind[0])[i];
+          }
+          for(unsigned j=0; j<ind3Size; j++){
+            unsigned lwrows;
+            unsigned* wrows = whichEqual(index3, ind3[j], nR3, &lwrows);
+            unsigned lwcols = *(*(special_posSize)[0])[j] + 1;
+            unsigned* wcols = malloc(lwcols * sizeof(unsigned));
+            wcols[0] = nedge;
+            for(unsigned k=1; k<lwcols; k++){
+              wcols[k] = (*(*special_pos[0])[j])[k-1] - 1;
+            }
+            unsigned** ed = subsetMatrix(edgesp1index, wrows, wcols, lwrows, lwcols);
+            printf("ed[4][4]=%u\n", ed[95][6]);
+            free(wrows);
+            free(wcols);
+            free(ed); // tmp
+          }
+
+
         }
 
         freeMatrix_s(vivjvk,3);

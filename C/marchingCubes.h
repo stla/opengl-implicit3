@@ -94,6 +94,7 @@ extern unsigned special_nedge[7];
 extern unsigned (*special_ind[])[];
 extern unsigned special_indSizes[7];
 extern unsigned (*(*special_pos[])[])[];
+extern unsigned* (*(special_posSize)[])[];
 
 int* unlist(int (*jagged[])[], unsigned*, unsigned*, unsigned, unsigned*);
 unsigned* unlist_u(unsigned (*jagged[])[], unsigned*, unsigned*, unsigned, unsigned*);
@@ -103,3 +104,7 @@ unsigned* FacesNo7(int*, size_t*, double*, size_t);
 unsigned** vector2matrix(unsigned*, unsigned, unsigned);
 
 unsigned** cbind(unsigned**, size_t*, unsigned*, unsigned, unsigned);
+
+unsigned** subsetMatrix(unsigned**, unsigned*, unsigned*, unsigned, unsigned);
+
+unsigned* whichEqual(unsigned*, unsigned, unsigned, unsigned*);
