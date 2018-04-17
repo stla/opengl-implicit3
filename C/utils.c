@@ -336,3 +336,53 @@ unsigned* whichEqual(unsigned* v, unsigned x, unsigned lv, unsigned* outlength){
   free(flag);
   return(out);
 }
+
+unsigned* matrix2vector(unsigned** M, unsigned nrow, unsigned ncol){
+  unsigned* out = malloc(nrow*ncol * sizeof(unsigned));
+  for(size_t i=0; i<nrow; i++){
+    for(size_t j=0; j<ncol; j++){
+        out[i*ncol + j] = M[i][j];
+    }
+  }
+  return out;
+}
+
+unsigned* matrix2vectorMinusFirstColumn(unsigned** M, unsigned nrow, unsigned ncol){
+  unsigned* out = malloc(nrow*(ncol-1) * sizeof(unsigned));
+  for(size_t i=0; i<nrow; i++){
+    for(size_t j=1; j<ncol; j++){
+        out[i*(ncol-1) + j-1] = M[i][j];
+    }
+  }
+  return out;
+}
+
+size_t* repeach(size_t* x, unsigned times, size_t n){
+    size_t* out = malloc(n*times * sizeof(size_t));
+    unsigned count = 0;
+    for(size_t i=0; i<n; i++){
+        for(unsigned j=0; j<times; j++){
+            out[count] = x[i];
+            count++;
+        }
+    }
+    return out;
+}
+
+// not used
+unsigned* replicatex(unsigned x, unsigned times){
+  unsigned* out = malloc(times * sizeof(unsigned));
+  for(unsigned i=0; i<times; i++){
+    out[i] = x;
+  }
+  return out;
+}
+
+unsigned* jthColumn(unsigned* M, unsigned lengthM, unsigned ncol, unsigned j){
+  unsigned nrow = lengthM/ncol;
+  unsigned* out = malloc(nrow * sizeof(unsigned));
+  for(unsigned i=0; i<nrow; i++){
+    out[i] = M[i*ncol+j];
+  }
+  return out;
+}

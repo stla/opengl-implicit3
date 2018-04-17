@@ -902,7 +902,7 @@ int* unlist(int (*jagged[])[], unsigned* jaggedsizes, unsigned* rows, unsigned n
   return out;
 }
 
-// matrix(M, ncol=ncol, byrow=TRUE)[,j]
+// matrix(M, ncol=ncol, byrow=TRUE)[,j] - in utils.c
 unsigned* jthColumn(unsigned* M, unsigned lengthM, unsigned ncol, unsigned j){
   unsigned nrow = lengthM/ncol;
   unsigned* out = malloc(nrow * sizeof(unsigned));
@@ -976,6 +976,49 @@ unsigned* whichEqual(unsigned* v, unsigned x, unsigned lv, unsigned* outlength){
   return(out);
 }
 
+// not tested - in utils.c
+unsigned* matrix2vector(unsigned** M, unsigned nrow, unsigned ncol){
+  unsigned* out = malloc(nrow*ncol * sizeof(unsigned));
+  for(size_t i=0; i<nrow; i++){
+    for(size_t j=0; j<ncol; j++){
+        out[i*ncol + j] = M[i][j];
+    }
+  }
+  return out;
+}
+
+unsigned* matrix2vectorMinusFirstColumn(unsigned** M, unsigned nrow, unsigned ncol){
+  unsigned* out = malloc(nrow*(ncol-1) * sizeof(unsigned));
+  for(size_t i=0; i<nrow; i++){
+    for(size_t j=1; j<ncol; j++){
+        out[i*(ncol-1) + j-1] = M[i][j];
+    }
+  }
+  return out;
+}
+
+// not tested - in utils.c
+size_t* repeach(size_t* x, unsigned times, size_t n){
+    size_t* out = malloc(n*times * sizeof(size_t));
+    unsigned count = 0;
+    for(size_t i=0; i<n; i++){
+        for(unsigned j=0; j<times; j++){
+            out[count] = x[i];
+            count++;
+        }
+    }
+    return out;
+}
+
+// not tested - in utils.c
+unsigned* replicatex(unsigned x, unsigned times){
+  unsigned* out = malloc(times * sizeof(unsigned));
+  for(unsigned i=0; i<times; i++){
+    out[i] = x;
+  }
+  return out;
+}
+
 
 /* -------- TESTS -------------------- */
 // test 3D jagged array
@@ -1043,7 +1086,7 @@ int main(){
   printf("---\n");
   printf("*test jthcolumn*\n");
   unsigned M[12] = {0,1,2, 3,4,5, 6,7,8, 9,10,11};
-  unsigned* column = jthColumn(M, 12, 3, 1);
+  unsigned* column = jthColumn(M, 12, 3, 0);
   for(unsigned i=0; i<12/3; i++){
     printf("column[%u]=%u\n",i,column[i]);
   } // expected: 1, 4, 7, 10
@@ -1058,7 +1101,13 @@ int main(){
     }
     printf("\n");
   }
+  printf("*test matrix2vector*\n");
+  unsigned* MatAsVector = matrix2vectorMinusFirstColumn(Mat, 4, 3);
+  for(unsigned i=0; i<8; i++){
+    printf("MatAsVector[%u]=%u\n", i, MatAsVector[i]);
+  }
   free(Mat[0]);free(Mat[1]);free(Mat[2]);free(Mat[3]);free(Mat);
+  free(MatAsVector);
 
   printf("---\n");
   printf("*test special_posSize*\n");

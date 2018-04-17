@@ -108,3 +108,13 @@ unsigned** cbind(unsigned**, size_t*, unsigned*, unsigned, unsigned);
 unsigned** subsetMatrix(unsigned**, unsigned*, unsigned*, unsigned, unsigned);
 
 unsigned* whichEqual(unsigned*, unsigned, unsigned, unsigned*);
+
+unsigned* matrix2vector(unsigned**, unsigned, unsigned);
+
+unsigned* matrix2vectorMinusFirstColumn(unsigned**, unsigned, unsigned);
+
+size_t* repeach(size_t*, unsigned, size_t);
+
+unsigned* replicatex(unsigned, unsigned);
+
+unsigned* jthColumn(unsigned*, unsigned, unsigned, unsigned);

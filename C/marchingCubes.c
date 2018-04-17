@@ -463,15 +463,138 @@ double** computeContour3d(
             unsigned* wrows = whichEqual(index3, ind3[j], nR3, &lwrows);
             unsigned lwcols = *(*(special_posSize)[0])[j] + 1;
             unsigned* wcols = malloc(lwcols * sizeof(unsigned));
+            printf("lwrows*(lwcols-1)=%u\n", lwrows*(lwcols-1));
             wcols[0] = nedge;
             for(unsigned k=1; k<lwcols; k++){
               wcols[k] = (*(*special_pos[0])[j])[k-1] - 1;
             }
             unsigned** ed = subsetMatrix(edgesp1index, wrows, wcols, lwrows, lwcols);
-            printf("ed[4][4]=%u\n", ed[95][6]);
+            printf("ed[95][6]=%u\n", ed[95][6]);
             free(wrows);
             free(wcols);
-            free(ed); // tmp
+            size_t col0ed[96] = {ed[0][0],
+ed[1][0],
+ed[2][0],
+ed[3][0],
+ed[4][0],
+ed[5][0],
+ed[6][0],
+ed[7][0],
+ed[8][0],
+ed[9][0],
+ed[10][0],
+ed[11][0],
+ed[12][0],
+ed[13][0],
+ed[14][0],
+ed[15][0],
+ed[16][0],
+ed[17][0],
+ed[18][0],
+ed[19][0],
+ed[20][0],
+ed[21][0],
+ed[22][0],
+ed[23][0],
+ed[24][0],
+ed[25][0],
+ed[26][0],
+ed[27][0],
+ed[28][0],
+ed[29][0],
+ed[30][0],
+ed[31][0],
+ed[32][0],
+ed[33][0],
+ed[34][0],
+ed[35][0],
+ed[36][0],
+ed[37][0],
+ed[38][0],
+ed[39][0],
+ed[40][0],
+ed[41][0],
+ed[42][0],
+ed[43][0],
+ed[44][0],
+ed[45][0],
+ed[46][0],
+ed[47][0],
+ed[48][0],
+ed[49][0],
+ed[50][0],
+ed[51][0],
+ed[52][0],
+ed[53][0],
+ed[54][0],
+ed[55][0],
+ed[56][0],
+ed[57][0],
+ed[58][0],
+ed[59][0],
+ed[60][0],
+ed[61][0],
+ed[62][0],
+ed[63][0],
+ed[64][0],
+ed[65][0],
+ed[66][0],
+ed[67][0],
+ed[68][0],
+ed[69][0],
+ed[70][0],
+ed[71][0],
+ed[72][0],
+ed[73][0],
+ed[74][0],
+ed[75][0],
+ed[76][0],
+ed[77][0],
+ed[78][0],
+ed[79][0],
+ed[80][0],
+ed[81][0],
+ed[82][0],
+ed[83][0],
+ed[84][0],
+ed[85][0],
+ed[86][0],
+ed[87][0],
+ed[88][0],
+ed[89][0],
+ed[90][0],
+ed[91][0],
+ed[92][0],
+ed[93][0],
+ed[94][0],
+ed[95][0]
+};
+
+//            size_t* col0ed = (size_t*) jthColumn(matrix2vector(ed,lwrows,lwcols), lwrows*lwcols, lwcols, 0); // outch
+            for(unsigned i=0; i<lwrows; i++){
+              printf("col0ed[%u] = %u\n", i, col0ed[i]);
+            }
+            size_t* col0edrep = repeach(col0ed, lwcols-1, lwrows);
+            //free(col0ed);
+            unsigned* edge1 = matrix2vectorMinusFirstColumn(ed, lwrows, lwcols);
+            free(ed);
+            unsigned* xx1 = malloc(lwrows*(lwcols-1) * sizeof(unsigned));
+            unsigned* xx2 = malloc(lwrows*(lwcols-1) * sizeof(unsigned));
+            for(size_t i=0; i<lwrows*(lwcols-1); i++){
+                unsigned* EPi = EdgePoints[edge1[i]-1];
+                xx1[i] = EPi[1];
+                xx2[i] = EPi[2];
+            }
+            free(edge1);
+            double** points3 = GetPoints(cubeco3, values3, col0edrep, xx1,
+                               xx2, (size_t) lwrows*(lwcols-1));
+            printf("points3[0][0]=%f\n", points3[0][0]);
+            double** triangles3 = CalPoints(points3, lwrows*(lwcols-1));
+            printf("triangles3[0][0]=%f\n", triangles3[0][0]);
+            free(xx1); free(xx2);
+            free(col0edrep);
+            free(points3);
+            free(triangles3); //tmp
           }
 
 
