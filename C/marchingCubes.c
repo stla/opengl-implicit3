@@ -588,12 +588,12 @@ double** computeContour3d(
     printf("nrow: %zu\n", nrow);
     size_t nR;
     unsigned* R = getR(tcase, nrow, &nR);
-    free(tcase);
     printf("getR done\n");
     printf("nR: %zu\n", nR);
     if(nR == 0){
         *ntriangles = 0;
         free(R);
+        free(tcase);
         return 0;
     }else{
         size_t** vivjvk = malloc(nrow * sizeof(size_t*));
@@ -650,10 +650,24 @@ double** computeContour3d(
         double** points = GetPoints(cubeco, values, p1rep, x1, x2, totalLength);
         // //printf("totalLength: %u\n", totalLength);
         double** triangles = CalPoints(points, totalLength);
+
+        unsigned special=0;
+        for(size_t i=0; i<nrow; i++){
+            unsigned tc = tcase[i];
+            if(tc==3 || tc==4 || tc==6 || tc==7 || tc==10 || tc==12 || tc==13){
+              special = 1;
+              break;
+            }
+        }
+        if(special){
+          printf("!!! there are special cases !!!");
+        }
+
         freeMatrix_d(points,8);
         free(x1); free(x2);
         freeMatrix_s(cubeco,3);
         free(values);
+        free(tcase);
         return triangles;
     }
 
