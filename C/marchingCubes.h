@@ -13,6 +13,8 @@ extern unsigned edgesLengths[254];
 
 extern unsigned EdgePoints[13][3];
 
+extern unsigned (*Edges[])[];
+
 void freeMatrix_u(unsigned**, unsigned);
 
 void freeMatrix_s(size_t**, size_t);
@@ -69,6 +71,10 @@ double** CalPoints(double**, size_t);
 
 double** computeContour3d(double***, unsigned, unsigned, unsigned, double, double, size_t*);
 
-double*** voxel(double (*f)(double, double, double), 
-                double, double, double, double, double, double, 
+double*** voxel(double (*f)(double, double, double),
+                double, double, double, double, double, double,
                 unsigned, unsigned, unsigned);
+
+/* Special cases */
+
+extern int (*Faces[])[];

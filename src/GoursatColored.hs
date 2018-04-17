@@ -2,7 +2,7 @@ module GoursatColored
   ( main )
   where
 import           Data.IORef
-import           Graphics.Rendering.OpenGL.GL
+import           Graphics.Rendering.OpenGL.GL  hiding (color)
 import           Graphics.UI.GLUT              hiding (Triangle, color)
 import           MarchingCubes
 import           MarchingCubes.Utils.Triangles (triangleNorm2Center)
