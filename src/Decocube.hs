@@ -35,8 +35,8 @@ fDecocube a (x,y,z) =
   z2x2a2 = z2+x2-a2
 
 voxel :: Double -> IO Voxel
-voxel a = makeVoxel (fDecocube a) ((-2,2),(-2,2),(-2,2))
-                    (200, 200, 200)
+voxel a = makeVoxel (fDecocube a) ((-1.3,1.3),(-1.3,1.3),(-1.3,1.3))
+                    (100, 100, 100)
 
 trianglesDecocube :: Voxel -> Double -> IO [NTriangle]
 trianglesDecocube vxl l = do

@@ -103,7 +103,7 @@ size_t** levelMatrix(double** M, unsigned m, unsigned n, double level, unsigned 
             out[i][j] = (strict ? (M[i][j] > level) : (M[i][j] >= level)) ? 1 : 0;
         }
     }
-    return out;    
+    return out;
 }
 
 double** toMatrix(double*** A, unsigned m, unsigned n, unsigned k){
@@ -114,7 +114,7 @@ double** toMatrix(double*** A, unsigned m, unsigned n, unsigned k){
             out[i][j] = A[i][j][k];
         }
     }
-    return out;    
+    return out;
 }
 
 unsigned** whichIndicesAndItems(size_t** M, unsigned m, unsigned n, unsigned* outlength){
@@ -213,6 +213,90 @@ size_t* replicate(size_t* x, unsigned* counts, size_t n){
             out[count] = x[i];
             count++;
         }
+    }
+    return out;
+}
+
+/* for special cases */
+// concatenate rows of a jagged array
+int* unlist(int (*jagged[])[], unsigned* jaggedsizes, unsigned* rows, unsigned nrows, unsigned* outlength){
+  unsigned count = 0;
+  for(unsigned i=0; i<nrows; i++){
+    count += jaggedsizes[rows[i]];
+  }
+  *outlength = count;
+  unsigned* out = malloc(count * sizeof(unsigned));
+  count = 0;
+  for(unsigned i=0; i<nrows; i++){
+    for(unsigned j=0; j<jaggedsizes[rows[i]]; j++){
+      out[count] = (*jagged[rows[i]])[j];
+      count++;
+    }
+  }
+  return out;
+}
+
+unsigned* unlist_u(unsigned (*jagged[])[], unsigned* jaggedsizes, unsigned* rows, unsigned nrows, unsigned* outlength){
+  unsigned count = 0;
+  for(unsigned i=0; i<nrows; i++){
+    count += jaggedsizes[rows[i]];
+  }
+  *outlength = count;
+  unsigned* out = malloc(count * sizeof(unsigned));
+  count = 0;
+  for(unsigned i=0; i<nrows; i++){
+    for(unsigned j=0; j<jaggedsizes[rows[i]]; j++){
+      out[count] = (*jagged[rows[i]])[j];
+      count++;
+    }
+  }
+  return out;
+}
+
+
+unsigned* FacesNo7(int* faces, size_t* p1, double* values, size_t l){
+    unsigned* index = malloc(l * sizeof(unsigned));
+    for(size_t i=0; i<l; i++){
+      unsigned f = abs(faces[i])-1;
+      unsigned e1 = FacePoints[f][1];
+      unsigned e2 = FacePoints[f][2];
+      unsigned e3 = FacePoints[f][3];
+      unsigned e4 = FacePoints[f][4];
+      size_t p = p1[i]-2;
+      double A = values[p+e1];
+      double B = values[p+e2];
+      double C = values[p+e3];
+      double D = values[p+e4];
+      int temp = faces[i]>0 ? 1 : -1;
+      temp *= (A*B-C*D>0 ? 1 : -1);
+      index[i] = temp == 1 ? 1 : 0;
+    }
+    return(index);
+}
+
+// matrix(M, ncol=ncol, byrow=TRUE)
+unsigned** vector2matrix(unsigned* M, unsigned lengthM, unsigned ncol){
+  unsigned nrow = lengthM/ncol;
+  unsigned** out = malloc(nrow * sizeof(unsigned*));
+  for(unsigned i=0; i<nrow; i++){
+    out[i] = malloc(ncol * sizeof(unsigned));
+    for(unsigned j=0; j<ncol; j++){
+      out[i][j] = M[i*ncol+j];
+    }
+  }
+  return out;
+}
+
+// cbind(matrix, vector, vector) - not tested
+unsigned** cbind(unsigned** M, size_t* v1, unsigned* v2, unsigned nrow, unsigned ncol){
+    unsigned** out = malloc(nrow * sizeof(unsigned*));
+    for(unsigned i=0; i<nrow; i++){
+      out[i] = malloc((ncol+2) * sizeof(unsigned));
+      for(unsigned j=0; j<ncol; j++){
+        out[i][j] = M[i][j];
+      }
+      out[i][ncol] = v1[i];
+      out[i][ncol+1] = v2[i];
     }
     return out;
 }

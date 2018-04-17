@@ -81,3 +81,25 @@ double*** voxel(double (*f)(double, double, double),
 extern int (*Faces[])[];
 
 extern unsigned FacesSizes[254];
+
+extern unsigned FacePoints[6][6];
+
+extern unsigned (*Edges2[])[];
+
+extern unsigned Edges2Sizes[254];
+
+extern unsigned special_name[7];
+extern unsigned special_nface[7];
+extern unsigned special_nedge[7];
+extern unsigned (*special_ind[])[];
+extern unsigned special_indSizes[7];
+extern unsigned (*(*special_pos[])[])[];
+
+int* unlist(int (*jagged[])[], unsigned*, unsigned*, unsigned, unsigned*);
+unsigned* unlist_u(unsigned (*jagged[])[], unsigned*, unsigned*, unsigned, unsigned*);
+
+unsigned* FacesNo7(int*, size_t*, double*, size_t);
+
+unsigned** vector2matrix(unsigned*, unsigned, unsigned);
+
+unsigned** cbind(unsigned**, size_t*, unsigned*, unsigned, unsigned);

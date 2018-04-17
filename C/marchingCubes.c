@@ -362,7 +362,7 @@ double** computeContour3d(
             cases[i] = vt[R[i]]-1; // -1 ou pas ?
         }
         free(R);
-        unsigned edgeslengths[nR];
+        unsigned edgeslengths[nR]; // attention stack overflow
         size_t totalLength = 0;
         for(size_t i=0; i<nR; i++){
             //printf("cases[%zu]=%u",i,cases[i]);
@@ -401,43 +401,59 @@ double** computeContour3d(
             }
         }
         if(special){
-          printf("!!! there are special cases !!! (%u)", special);
+          printf("!!! there are special cases !!! (%u)\n", special);
         }
 
         // faire un malloc(0) pour new triangles
-        // unsigned* is3 = malloc(nrow * sizeof(unsigned));
-        // size_t nR3=0;
-        // for(size_t i=0; i<nrow; i++){
-        //   if(tcase[i]==3){
-        //     is3[i] = 1;
-        //     nR3++;
-        //   }else{
-        //     is3[i] = 0;
-        //   }
-        // }
-        // if(nR3 > 0){
-        //   size_t* R3 = malloc(nR3 * sizeof(size_t));
-        //   unsigned count_is3=0;
-        //   for(size_t i=0; i<nrow; i++){
-        //     if(is3[i]){
-        //       R3[count_is3] = i;
-        //       count_is3++;
-        //     }
-        //   }
-        //   free(is3);
-        //   size_t** cubeco3 = GetBasic1(R3, nR3, vivjvk, 999);
-        //   double* values3 = GetBasic2prime(voxel, level, cubeco3, nR3);
-        //   size_t* p13 = malloc(nR3 * sizeof(size_t));
-        //   for(size_t i=0; i<nR3; i++){
-        //       p13[i] = i*8 + 1;
-        //   }
-        //   unsigned* cases3 = malloc(nR3 * sizeof(unsigned));
-        //   for(size_t i=0; i<nR3; i++){
-        //       cases[i] = vt[R3[i]]-1;
-        //   }
-        //   free(R3);
-        //
-        // }
+        unsigned* is3 = malloc(nrow * sizeof(unsigned));
+        size_t nR3=0;
+        for(size_t i=0; i<nrow; i++){
+          if(tcase[i]==3){
+            is3[i] = 1;
+            nR3++;
+          }else{
+            is3[i] = 0;
+          }
+        }
+        printf("***********nR3: %u\n", nR3);
+        if(nR3 > 0){
+          unsigned* R3 = malloc(nR3 * sizeof(unsigned));
+          unsigned count_is3=0;
+          for(size_t i=0; i<nrow; i++){
+            if(is3[i]){
+              R3[count_is3] = i;
+              count_is3++;
+            }
+          }
+          free(is3);
+          size_t** cubeco3 = GetBasic1(R3, nR3, vivjvk, 999);
+          double* values3 = GetBasic2prime(voxel, level, cubeco3, nR3);
+          size_t* p13 = malloc(nR3 * sizeof(size_t));
+          for(size_t i=0; i<nR3; i++){
+              p13[i] = i*8 + 1;
+          }
+          unsigned* cases3 = malloc(nR3 * sizeof(unsigned));
+          for(size_t i=0; i<nR3; i++){
+              cases3[i] = vt[R3[i]]-1;
+          }
+          free(R3);
+          unsigned nedge = special_nedge[0];
+
+          unsigned outlength3; // = nR3 ?
+          int* faces3 = unlist(Faces, FacesSizes, cases3, nR3, &outlength3);
+          printf("outlength3: %u\n", outlength3);
+          printf("nR3: %u\n", nR3); // yes, outlength3 = nR3 !
+          unsigned* index3 = FacesNo7(faces3, p13, values3, nR3);
+          printf("index3:\n");
+          for(unsigned i=0; i<nR3; i++){
+            printf("index3[%u]=%u\n", i, index3[i]);
+          }
+          unsigned* unlisted_edges3 = unlist_u(Edges2, Edges2Sizes, cases3, nR3, &outlength3);
+          printf("outlength3 bis: %u\n", outlength3); // outlength3 = nedge * nR3
+          unsigned** edges3 = vector2matrix(unlisted_edges3, outlength3, nedge);
+          unsigned** edgesp1index = cbind(edges3, p13, index3, nR3, nedge);
+          printf("edgesp1index[191][19]=%u\n", edgesp1index[191][19]);
+        }
 
         freeMatrix_s(vivjvk,3);
         freeMatrix_u(ijkt,4);
