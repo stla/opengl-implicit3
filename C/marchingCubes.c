@@ -425,11 +425,20 @@ double** computeContour3d(
             free(R3);
             unsigned nedge = special_nedge[c];
             unsigned outlength3; // = nR3 ?
-            int* faces3 = unlist(Faces, FacesSizes, cases3, nR3, &outlength3);
-            printf("outlength3: %u\n", outlength3);
-            printf("nR: %u\n", nR3); // yes, outlength3 = nR3 !
-            unsigned* index3 = FacesNo7(faces3, p13, values3, nR3);
-            free(faces3);
+            unsigned* index3;
+            if(c == 0){
+              int* faces3 = unlist(Faces, FacesSizes, cases3, nR3, &outlength3);
+              printf("outlength3: %u\n", outlength3);
+              printf("nR: %u\n", nR3); // yes, outlength3 = nR3 !
+              index3 = FacesNo7(faces3, p13, values3, nR3, 1);
+              free(faces3);
+            }else if(c == 1){
+              int* faces3 = unlist(Faces, FacesSizes, cases3, nR3, &outlength3);
+              printf("outlength3: %u\n", outlength3);
+              printf("nR: %u\n", nR3); // yes, outlength3 = nR3 !
+              index3 = Faces7(faces3, p13, values3, nR3, 1);
+              free(faces3);
+            } // else index Faces(No)7(jthcolumn(faces3, ...), ...)
             // printf("index3:\n");
             // for(unsigned i=0; i<nR3; i++){
             //   printf("index3[%u]=%u\n", i, index3[i]);

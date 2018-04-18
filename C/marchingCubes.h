@@ -99,7 +99,11 @@ extern unsigned* (*(special_posSize)[])[];
 int* unlist(int (*jagged[])[], unsigned*, unsigned*, unsigned, unsigned*);
 unsigned* unlist_u(unsigned (*jagged[])[], unsigned*, unsigned*, unsigned, unsigned*);
 
-unsigned* FacesNo7(int*, size_t*, double*, size_t);
+unsigned upow(unsigned, unsigned);
+
+unsigned* FacesNo7(int*, size_t*, double*, size_t, unsigned);
+
+unsigned* Faces7(int*, size_t*, double*, size_t, unsigned);
 
 unsigned** vector2matrix(unsigned*, unsigned, unsigned);
 

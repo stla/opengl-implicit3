@@ -253,8 +253,18 @@ unsigned* unlist_u(unsigned (*jagged[])[], unsigned* jaggedsizes, unsigned* rows
   return out;
 }
 
+unsigned upow(unsigned base, unsigned exp){
+    unsigned result = 1;
+    while(exp){
+        if(exp & 1)
+            result *= base;
+        exp >>= 1;
+        base *= base;
+    }
+    return result;
+}
 
-unsigned* FacesNo7(int* faces, size_t* p1, double* values, size_t l){
+unsigned* FacesNo7(int* faces, size_t* p1, double* values, size_t l, unsigned j){
     unsigned* index = malloc(l * sizeof(unsigned));
     for(size_t i=0; i<l; i++){
       unsigned f = abs(faces[i])-1;
@@ -269,9 +279,40 @@ unsigned* FacesNo7(int* faces, size_t* p1, double* values, size_t l){
       double D = values[p+e4];
       int temp = faces[i]>0 ? 1 : -1;
       temp *= (A*B-C*D>0 ? 1 : -1);
-      index[i] = temp == 1 ? 1 : 0;
+      index[i] = temp == 1 ? upow(2,j-1) : 0;
     }
     return(index);
+}
+
+unsigned* Faces7(int* faces, size_t* p1, double* values, size_t l, unsigned j){
+  unsigned* index = malloc(l * sizeof(unsigned));
+  for(size_t i=0; i<l; i++){
+    size_t p = p1[i] - 1;
+    double A0 = values[p];
+    double B0 = values[p+3];
+    double C0 = values[p+2];
+    double D0 = values[p+1];
+    double A1 = values[p+4];
+    double B1 = values[p+7];
+    double C1 = values[p+6];
+    double D1 = values[p+5];
+    double a = (A1 - A0) * (C1 - C0) - (B1 - B0) * (D1 - D0);
+    double b = C0 * (A1 - A0) + A0 * (C1 - C0) - D0 * (B1 - B0) - B0 * (D1 - D0);
+    double c = A0 * C0 - B0 * D0;
+    double tmax = -b/(2 * a);
+    double maximum = a * tmax*tmax + b * tmax + c;
+    printf("maximum: %f\n", maximum);
+// ?    maximum <- ifelse(maximum == "NaN", -1, maximum)
+    unsigned cond1 = a<0 ? 1 : 0;
+    unsigned cond2 = tmax>0 ? 1 : 0;
+    unsigned cond3 = tmax<1 ? 1 : 0;
+    unsigned cond4 = maximum>0 ? 1 : 0;
+    unsigned totalcond = cond1*cond2*cond3*cond4;
+    int temp = faces[i]>0 ? 1 : -1;
+    temp *= (totalcond == 1 ? 1 : -1);
+    index[i] = temp == 1 ? upow(2,j-1) : 0;
+  }
+  return index;
 }
 
 // matrix(M, ncol=ncol, byrow=TRUE)

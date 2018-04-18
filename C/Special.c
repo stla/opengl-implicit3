@@ -828,6 +828,7 @@ unsigned* FacesNo7(int* faces, size_t* p1, double* values, size_t l){
 }
 
 
+// in utils.c
 unsigned* Faces7(int* faces, size_t* p1, double* values, size_t l){
   // double* A0 = malloc(l * sizeof(double));
   // double* B0 = malloc(l * sizeof(double));
