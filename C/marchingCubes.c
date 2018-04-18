@@ -436,13 +436,13 @@ double** computeContour3d(
               unsigned nface = special_nface[c];
               int* facelast = jthColumn(faces3, outlength3, nface, nface-1);
               index3 = Faces7(facelast, p13, values3, nR3, nface);
-              // free facelast ?
+              free(facelast);
               for(unsigned j=0; j<nface-1; j++){
                 int* facej = jthColumn(faces3, outlength3, nface, j);
-                unsigned* temp = Faces7(facej, p13, values3, nR3, j+1);
+                unsigned* temp = FacesNo7(facej, p13, values3, nR3, j+1);
                 index3 = vectorialSum(index3, temp, nR3);
-                // free(facej) ?
-                // free(temp) ?
+                free(facej);
+                free(temp);
               }
             }
             free(faces3);
@@ -465,11 +465,16 @@ double** computeContour3d(
             for(unsigned i=0; i<ind3Size; i++){
               ind3[i] = (*special_ind[c])[i];
             }
-
+            // printf("index3: \n");
+            // for(unsigned i=0; i<nR3; i++){
+            //   printf("index[%u]=%u\n", i, index3[i]);
+            // }
             for(unsigned j=0; j<ind3Size; j++){
               unsigned lwrows;
               unsigned* wrows = whichEqual(index3, ind3[j], nR3, &lwrows);
+              printf("lwrows: %u\n", lwrows);
               unsigned lwcols = *(*(special_posSize)[c])[j] + 1;
+              printf("lwcols: %u\n", lwcols);
               unsigned* wcols = malloc(lwcols * sizeof(unsigned));
               printf("totalLength = lwrows*(lwcols-1) = %u\n", lwrows*(lwcols-1));
               wcols[0] = nedge;
@@ -510,21 +515,23 @@ double** computeContour3d(
               //freeMatrix_s(cubeco,3); free(values3); // ça fait planter
               free(col0edrep);
               free(points3);
-              triangles = realloc(triangles, (*ntriangles + totalLength3)*sizeof(*triangles));
-              if(triangles==NULL){
-          			printf("Error reallocating memory!");
-          			freeMatrix_d(triangles, totalLength3);
-                // free les trucs de la fin ?
-          			exit(1);
-          		}
-              for(size_t i = *ntriangles; i < *ntriangles + totalLength3; i++){
-                triangles[i] = malloc(3 * sizeof(double));
-                for(short j=0; j<3; j++){
-                  triangles[i][j] = triangles3[i - *ntriangles][j];
+              if(totalLength3>0){
+                triangles = realloc(triangles, (*ntriangles + totalLength3)*sizeof(*triangles));
+                if(triangles==NULL){
+            			printf("Error reallocating memory!");
+            			freeMatrix_d(triangles, totalLength3);
+                  // free les trucs de la fin ?
+            			exit(1);
+            		}
+                for(size_t i = *ntriangles; i < *ntriangles + totalLength3; i++){
+                  triangles[i] = malloc(3 * sizeof(double));
+                  for(short j=0; j<3; j++){
+                    triangles[i][j] = triangles3[i - *ntriangles][j];
+                  }
+                  //*(triangles[i]) = *(triangles3[i - *ntriangles]);
                 }
-                //*(triangles[i]) = *(triangles3[i - *ntriangles]);
+                *ntriangles += totalLength3;
               }
-              *ntriangles += totalLength3;
               freeMatrix_d(triangles3, totalLength3);
             } /* end loop for(unsigned j=0; j<ind3Size; j++) */
 

@@ -190,6 +190,8 @@ main = do
         \        e, r, t, y, u, i\n\
         \    Zoom: l, m\n\
         \    Increase/decrease parameters:\n\
-        \        f, v, g, b, h, n\n\
+        \        f, v, g, b\n\
+        \    Increase/decrease isolevel:\n\
+        \        h, n\n\
         \"
   mainLoop
