@@ -386,3 +386,14 @@ unsigned* jthColumn(unsigned* M, unsigned lengthM, unsigned ncol, unsigned j){
   }
   return out;
 }
+
+double** transpose(double** M, size_t nrow, size_t ncol){
+  double** out = malloc(ncol * sizeof(double*));
+  for(size_t i=0; i<ncol; i++){
+    out[i] = malloc(nrow * sizeof(double));
+    for(size_t j=0; j<nrow; j++){
+      out[i][j] = M[j][i];
+    }
+  }
+  return out;
+}

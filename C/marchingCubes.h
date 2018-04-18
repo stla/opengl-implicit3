@@ -118,3 +118,5 @@ size_t* repeach(size_t*, unsigned, size_t);
 unsigned* replicatex(unsigned, unsigned);
 
 unsigned* jthColumn(unsigned*, unsigned, unsigned, unsigned);
+
+double** transpose(double**, size_t, size_t);

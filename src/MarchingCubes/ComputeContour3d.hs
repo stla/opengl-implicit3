@@ -43,8 +43,8 @@ computeContour3d' :: Voxel -> Maybe Double -> Double
                   -> IO [Triangle]
 computeContour3d' voxel voxmax level = do
     (ppCDouble, nrows) <- computeContour3d voxel voxmax level
-    points <- mapM (peekArray nrows) =<< peekArray 3 ppCDouble
-    return $ toTriangles (transpose (map (map realToFrac) points))
+    points <- mapM (peekArray 3) =<< peekArray nrows ppCDouble
+    return $ toTriangles (map (map realToFrac) points)
 
 computeContour3d'' :: Voxel -> Maybe Double -> Double
                    -> IO [Triangle]
@@ -68,4 +68,3 @@ computeContour3d''' voxel voxmax level = do
   triangles <- computeContour3d'' voxel voxmax level
   let norm2max = maximum (map triangleNorm2Center triangles)
   return (triangles, norm2max)
-

@@ -165,7 +165,7 @@ unsigned* getR(unsigned* tcase, size_t nrow, size_t* nR){
     size_t count=0;
     for(size_t i=0; i<nrow; i++){
         ////printf("in loop\n");
-        ////printf("tcase[%zu]=%u\n", i, tcase[i]);
+        ////printf("tcase[%u]=%u\n", i, tcase[i]);
         unsigned tc = tcase[i];
         if(tc==1 || tc==2 || tc==5 || tc==8 || tc==9 || tc==11 || tc==14){
             out[count] = (unsigned) i;
@@ -312,7 +312,9 @@ double** CalPoints(double** points, size_t n){
     double** out = malloc(3 * sizeof(double*));
     out[0] = x; out[1] = y; out[2] = z;
     // free(x);free(y);free(z); NON
-    return(out);
+    double** tout = transpose(out, 3, n);
+    //free(out);
+    return(tout);
 }
 
 double** computeContour3d(
@@ -328,11 +330,11 @@ double** computeContour3d(
     printf("ijkt[3][0]=%u\n", ijkt[3][0]);
     unsigned* tcase = get_tcase(ijkt[3], nrow);
     printf("tcase[0]=%u\n", tcase[0]);
-    printf("nrow: %zu\n", nrow);
+    printf("nrow: %u\n", nrow);
     size_t nR;
     unsigned* R = getR(tcase, nrow, &nR);
     printf("getR done\n");
-    printf("nR: %zu\n", nR);
+    printf("nR: %u\n", nR);
     if(nR == 0){
         *ntriangles = 0;
         free(R);
@@ -365,11 +367,11 @@ double** computeContour3d(
         unsigned edgeslengths[nR]; // attention stack overflow
         size_t totalLength = 0;
         for(size_t i=0; i<nR; i++){
-            //printf("cases[%zu]=%u",i,cases[i]);
+            //printf("cases[%u]=%u",i,cases[i]);
             edgeslengths[i] = edgesLengths[cases[i]];
             totalLength += (size_t) edgeslengths[i];
         }
-        printf("totalLength: %zu\n", totalLength);
+        printf("totalLength: %u\n", totalLength);
         *ntriangles = totalLength;
         size_t* p1rep = replicate(p1, edgeslengths, nR);
         size_t* edges = malloc(totalLength * sizeof(size_t));
@@ -488,28 +490,44 @@ double** computeContour3d(
             free(col0ed);
             unsigned* edge1 = matrix2vectorMinusFirstColumn(ed, lwrows, lwcols);
             freeMatrix_u(ed, lwrows);
-            unsigned* xx1 = malloc(lwrows*(lwcols-1) * sizeof(unsigned));
-            unsigned* xx2 = malloc(lwrows*(lwcols-1) * sizeof(unsigned));
-            for(size_t i=0; i<lwrows*(lwcols-1); i++){
+            unsigned totalLength3 = lwrows*(lwcols-1);
+            unsigned* xx1 = malloc(totalLength3 * sizeof(unsigned));
+            unsigned* xx2 = malloc(totalLength3 * sizeof(unsigned));
+            for(size_t i=0; i<totalLength3; i++){
                 unsigned* EPi = EdgePoints[edge1[i]-1];
                 xx1[i] = EPi[1];
                 xx2[i] = EPi[2];
             }
             free(edge1);
             double** points3 = GetPoints(cubeco3, values3, col0edrep, xx1,
-                               xx2, (size_t) lwrows*(lwcols-1));
+                               xx2, (size_t) totalLength3);
             printf("points3[0][0]=%f\n", points3[0][0]);
-            double** triangles3 = CalPoints(points3, lwrows*(lwcols-1));
-            printf("triangles3[0][0]=%f\n", triangles3[0][0]);
+            double** triangles3 = CalPoints(points3, totalLength3);
+            printf("triangles3[3][0]=%f\n", triangles3[3][0]);
             free(xx1); free(xx2);
             //freeMatrix_s(cubeco,3); free(values3); // ça fait planter
             free(col0edrep);
             free(points3);
+            triangles = realloc(triangles, (*ntriangles + totalLength3)*sizeof(*triangles));
+            if(triangles==NULL)
+        		{
+        			printf("Error reallocating memory!");
+        			free(triangles);
+        			exit(1);
+        		}
+            for(size_t i = *ntriangles; i < *ntriangles + totalLength3; i++){
+              triangles[i] = malloc(3 * sizeof(double));
+              for(short j=0; j<3; j++){
+                triangles[i][j] = triangles3[i - *ntriangles][j];
+              }
+              //*(triangles[i]) = *(triangles3[i - *ntriangles]);
+            }
+            *ntriangles += totalLength3;
             free(triangles3); //tmp
           } /* end loop for(unsigned j=0; j<ind3Size; j++) */
 
         } /* end if(nR3>0) */
-        
+
         free(is3);
         freeMatrix_s(vivjvk,3);
         freeMatrix_u(ijkt,4);
