@@ -2,7 +2,6 @@
 #define __HEADER__
 #include "marchingCubes.h"
 #endif
-#include <math.h>   // for floor - compile with flag -lm
 
 size_t** faceType(double** M, unsigned m, unsigned n, double level, double max){
     size_t** L = levelMatrix(M, m, n, level, level<max);
@@ -426,19 +425,28 @@ double** computeContour3d(
             unsigned nedge = special_nedge[c];
             unsigned outlength3; // = nR3 ?
             unsigned* index3;
+            int* faces3 = unlist(Faces, FacesSizes, cases3, nR3, &outlength3);
+            printf("outlength3: %u\n", outlength3);
+            printf("nR: %u\n", nR3); // yes, outlength3 = nR3 !
             if(c == 0){
-              int* faces3 = unlist(Faces, FacesSizes, cases3, nR3, &outlength3);
-              printf("outlength3: %u\n", outlength3);
-              printf("nR: %u\n", nR3); // yes, outlength3 = nR3 !
               index3 = FacesNo7(faces3, p13, values3, nR3, 1);
-              free(faces3);
             }else if(c == 1){
-              int* faces3 = unlist(Faces, FacesSizes, cases3, nR3, &outlength3);
-              printf("outlength3: %u\n", outlength3);
-              printf("nR: %u\n", nR3); // yes, outlength3 = nR3 !
               index3 = Faces7(faces3, p13, values3, nR3, 1);
-              free(faces3);
-            } // else index Faces(No)7(jthcolumn(faces3, ...), ...)
+            }else{
+              unsigned nface = special_nface[c];
+              int* facelast = jthColumn(faces3, outlength3, nface, nface-1);
+              index3 = Faces7(facelast, p13, values3, nR3, nface);
+              // free facelast ?
+              for(unsigned j=0; j<nface-1; j++){
+                int* facej = jthColumn(faces3, outlength3, nface, j);
+                unsigned* temp = Faces7(facej, p13, values3, nR3, j+1);
+                index3 = vectorialSum(index3, temp, nR3);
+                // free(facej) ?
+                // free(temp) ?
+              }
+            }
+            free(faces3);
+ // else index Faces(No)7(jthcolumn(faces3, ...), ...)
             // printf("index3:\n");
             // for(unsigned i=0; i<nR3; i++){
             //   printf("index3[%u]=%u\n", i, index3[i]);

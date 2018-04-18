@@ -301,6 +301,7 @@ unsigned* Faces7(int* faces, size_t* p1, double* values, size_t l, unsigned j){
     double c = A0 * C0 - B0 * D0;
     double tmax = -b/(2 * a);
     double maximum = a * tmax*tmax + b * tmax + c;
+    maximum = isnan(maximum) ? -1 : maximum;
     printf("maximum: %f\n", maximum);
 // ?    maximum <- ifelse(maximum == "NaN", -1, maximum)
     unsigned cond1 = a<0 ? 1 : 0;
@@ -419,9 +420,9 @@ unsigned* replicatex(unsigned x, unsigned times){
   return out;
 }
 
-unsigned* jthColumn(unsigned* M, unsigned lengthM, unsigned ncol, unsigned j){
+int* jthColumn(int* M, unsigned lengthM, unsigned ncol, unsigned j){
   unsigned nrow = lengthM/ncol;
-  unsigned* out = malloc(nrow * sizeof(unsigned));
+  int* out = malloc(nrow * sizeof(unsigned));
   for(unsigned i=0; i<nrow; i++){
     out[i] = M[i*ncol+j];
   }
@@ -435,6 +436,14 @@ double** transpose(double** M, size_t nrow, size_t ncol){
     for(size_t j=0; j<nrow; j++){
       out[i][j] = M[j][i];
     }
+  }
+  return out;
+}
+
+unsigned* vectorialSum(unsigned* v1, unsigned* v2, unsigned l){
+  unsigned* out = malloc(l * sizeof(unsigned));
+  for(unsigned i=0; i<l; i++){
+    out[i] = v1[i] + v2[i];
   }
   return out;
 }

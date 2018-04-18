@@ -1,5 +1,7 @@
 #include <stdlib.h> // for malloc
 #include <stdio.h> // for printf
+#include <math.h>   // for floor and isnan - compile with flag -lm
+
 
 void displayMatrix_u(unsigned**, unsigned, unsigned);
 
@@ -121,6 +123,8 @@ size_t* repeach(size_t*, unsigned, size_t);
 
 unsigned* replicatex(unsigned, unsigned);
 
-unsigned* jthColumn(unsigned*, unsigned, unsigned, unsigned);
+int* jthColumn(int*, unsigned, unsigned, unsigned);
 
 double** transpose(double**, size_t, size_t);
+
+unsigned* vectorialSum(unsigned*, unsigned*, unsigned);
