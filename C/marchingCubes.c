@@ -311,9 +311,9 @@ double** CalPoints(double** points, size_t n){
     }
     double** out = malloc(3 * sizeof(double*));
     out[0] = x; out[1] = y; out[2] = z;
-    // free(x);free(y);free(z); NON
     double** tout = transpose(out, 3, n);
-    //free(out);
+    freeMatrix_d(out,3);
+    // free(x);free(y);free(z); fait planter
     return(tout);
 }
 
