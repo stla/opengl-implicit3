@@ -3,6 +3,7 @@ resolver: lts-11.4
 packages:
 - .
 
-extra-deps: 
+extra-deps:
 - gl-capture-0.1.0.0
 - numeric-tools-0.2.0.1
+- polynomial-0.7.3

@@ -32,6 +32,7 @@ library
                      , Utils.Palettes
                      , GoursatColored
                      , Decocube
+                     , BanchoffChmutov
   build-depends:       base >= 4.7 && < 5
                      , OpenGL
                      , GLUT
@@ -40,6 +41,7 @@ library
                      , numeric-tools
                      , vector
                      , containers
+                     , polynomial
   default-language:    Haskell2010
   other-extensions:    ForeignFunctionInterface
   include-dirs:        C
@@ -124,6 +126,18 @@ executable decocube
   hs-source-dirs:      src-exe
   main-is:             ExeDecocube.hs
   ghc-options:         -fllvm -main-is ExeDecocube
+  build-depends:       base >= 4.7 && < 5
+                     , opengl-implicit3
+  default-language:    Haskell2010
+
+executable banchoffchmutov
+  if flag(exe)
+    buildable: True
+  else
+    buildable: False
+  hs-source-dirs:      src-exe
+  main-is:             ExeBanchoffChmutov.hs
+  ghc-options:         -fllvm -main-is ExeBanchoffChmutov
   build-depends:       base >= 4.7 && < 5
                      , opengl-implicit3
   default-language:    Haskell2010
