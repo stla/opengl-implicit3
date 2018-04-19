@@ -303,7 +303,6 @@ unsigned* Faces7(int* faces, size_t* p1, double* values, size_t l, unsigned j){
     double maximum = a * tmax*tmax + b * tmax + c;
     maximum = isnan(maximum) ? -1 : maximum;
     printf("maximum: %f\n", maximum);
-// ?    maximum <- ifelse(maximum == "NaN", -1, maximum)
     unsigned cond1 = a<0 ? 1 : 0;
     unsigned cond2 = tmax>0 ? 1 : 0;
     unsigned cond3 = tmax<1 ? 1 : 0;

@@ -30,7 +30,7 @@ voxel :: Voxel
 {-# NOINLINE voxel #-}
 voxel = unsafePerformIO $ makeVoxel fBretz
                           ((-2.5,2.5),(-2.5,2.5),(-0.5,0.5))
-                          (100, 100, 100)
+                          (150, 150, 100)
 
 trianglesBretz :: Double -> IO [NTriangle]
 trianglesBretz level = do

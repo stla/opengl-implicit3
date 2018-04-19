@@ -1,7 +1,7 @@
 module Bretzel5Colored
   ( main )
   where
-import           Control.Monad                 (when)
+-- import           Control.Monad                 (when)
 import           Data.IORef
 import           Graphics.Rendering.OpenGL.GL
 import           Graphics.UI.GLUT              hiding (Triangle)
@@ -26,9 +26,6 @@ data Context = Context
     , contextZoom      :: IORef Double
     , contextTriangles :: IORef ([NTriangle], [Color4 GLfloat])
     }
-
-red :: Color4 GLfloat
-red = Color4 1 0 0 1
 
 fBretz :: XYZ -> Double
 fBretz (x,y,z) = ((x2+y2/4-1)*(x2/4+y2-1))^2 + z*z
@@ -161,6 +158,3 @@ main = do
         \    Increase/decrease isolevel: h, n\n\
         \"
   mainLoop
-
-
-

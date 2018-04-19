@@ -3,7 +3,7 @@ module MarchingCubes.ComputeContour3d
   (computeContour3d, computeContour3d', computeContour3d'', computeContour3d''')
   where
 import           Control.Monad                 ((=<<))
-import           Data.List                     (transpose)
+-- import           Data.List                     (transpose)
 import           Data.Tuple.Extra              (fst3, snd3, thd3)
 import           Foreign.C.Types
 import           Foreign.Marshal.Alloc         (free, mallocBytes)

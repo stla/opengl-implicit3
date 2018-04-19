@@ -48,12 +48,11 @@ makeVoxel fun ((xm,xM),(ym,yM),(zm,zM)) (nx, ny, nz) = do
 voxel2tripleList :: Voxel -> IO [[[CDouble]]]
 voxel2tripleList (pppCDouble, (nx,ny,nz), _) =
     mapM (mapM (peekArray nz)) =<< (mapM (peekArray ny) =<< ((peekArray nx) pppCDouble))
-    --- where n' = n-1
 
 voxelMax :: Voxel -> IO Double
 voxelMax voxel = do
     tripleList <- voxel2tripleList voxel
     return $ realToFrac $ maximum (concat . concat $ tripleList)
 
-test_fVoxel :: (Double,Double,Double) -> Double
-test_fVoxel (x,y,z) = x+y+z
+-- test_fVoxel :: (Double,Double,Double) -> Double
+-- test_fVoxel (x,y,z) = x+y+z

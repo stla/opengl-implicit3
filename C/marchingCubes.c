@@ -363,7 +363,7 @@ double** computeContour3d(
             cases[i] = vt[R[i]]-1; // -1 ou pas ?
         }
         free(R);
-        unsigned edgeslengths[nR]; // attention stack overflow
+        unsigned* edgeslengths = malloc(nR * sizeof(unsigned));
         size_t totalLength = 0;
         for(size_t i=0; i<nR; i++){
             //printf("cases[%u]=%u",i,cases[i]);
@@ -381,6 +381,7 @@ double** computeContour3d(
                 edgeiter++;
             }
         }
+        free(edgeslengths);
         unsigned* x1 = malloc(totalLength * sizeof(unsigned));
         unsigned* x2 = malloc(totalLength * sizeof(unsigned));
         for(size_t i=0; i<totalLength; i++){
