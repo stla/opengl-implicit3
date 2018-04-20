@@ -33,6 +33,7 @@ library
                      , GoursatColored
                      , Decocube
                      , BanchoffChmutov
+                     , KusnerSchmitt
   build-depends:       base >= 4.7 && < 5
                      , OpenGL
                      , GLUT
@@ -138,6 +139,18 @@ executable banchoffchmutov
   hs-source-dirs:      src-exe
   main-is:             ExeBanchoffChmutov.hs
   ghc-options:         -fllvm -main-is ExeBanchoffChmutov
+  build-depends:       base >= 4.7 && < 5
+                     , opengl-implicit3
+  default-language:    Haskell2010
+
+executable kusnerschmitt
+  if flag(exe)
+    buildable: True
+  else
+    buildable: False
+  hs-source-dirs:      src-exe
+  main-is:             ExeKusnerSchmitt.hs
+  ghc-options:         -fllvm -main-is ExeKusnerSchmitt
   build-depends:       base >= 4.7 && < 5
                      , opengl-implicit3
   default-language:    Haskell2010
