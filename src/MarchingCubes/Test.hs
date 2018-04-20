@@ -20,5 +20,4 @@ vox = makeVoxel f ((-2,2),(-2,2),(-2,2)) (5,5,5)
 test :: IO [Triangle]
 test = do
     vox <- makeVoxel f ((-2,2),(-2,2),(-2,2)) (50,50,50)
-    computeContour3d' vox (Just 100) 1
-
+    computeContour3d' vox (Just 100) 1 True

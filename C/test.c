@@ -15,8 +15,6 @@ int main(){
     size_t ntriangles;
     double** contour = computeContour3d(vxl, n, n, n, 12, 1, &ntriangles);
     freeArray(vxl, n, n);
-    printf("nrows: %u\n", ntriangles);
+    printf("nrows: %lu\n", (unsigned long)ntriangles);
     return 0;
 }
-
-

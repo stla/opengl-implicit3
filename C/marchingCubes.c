@@ -104,12 +104,12 @@ size_t** GetBasic1(unsigned* R, size_t nR, size_t** vivjvk, unsigned n){ // n = 
 //  printf("GB1 - k1 done\n");
   size_t** k2 = kro2(cube1, nR, 3, 8); // PROBLèME ICI (fixed now)
 //  printf("GB1 - k2 done\n");
-  size_t** cubeco = matricialSum(k1, k2, 8*nR, 3);
+  size_t** cubeco = matricialSum(k1, k2, 8*nR+1, 3);
 //  printf("GB1 - cubeco done\n");
   freeMatrix_s(indexPtr,8);
   freeMatrix_s(cube1,nR);
   freeMatrix_s(k1,24);
-  freeMatrix_s(k2,8*nR);
+  freeMatrix_s(k2,8*nR+1);
   return cubeco;
 }
 
@@ -221,11 +221,17 @@ double** GetPoints(size_t** cubeco, double* values, size_t* p1, unsigned* x1,
     unsigned* p1x1 = malloc(n * sizeof(unsigned));
     unsigned* p1x2 = malloc(n * sizeof(unsigned));
     double* xx1 = malloc(n * sizeof(double));
+    // printf("p1x1, p1x2, xx1\n");
     for(size_t i=0; i<n; i++){
         p1x1[i] = p1[i] + x1[i];
         p1x2[i] = p1[i] + x2[i];
         xx1[i] = (double) x1[i];
     }
+    // if(n > 74){
+    //   printf("p1[74]=%lu\n", (unsigned long)p1[74]);
+    //   printf("x1[74]=%u\n", x1[74]);
+    // }
+    // printf("lambdamu\n");
     double** lambdamu = LambdaMu(xx1, n);
     double* v1 = malloc(n * sizeof(double));
     double* v2 = malloc(n * sizeof(double));
@@ -241,16 +247,15 @@ double** GetPoints(size_t** cubeco, double* values, size_t* p1, unsigned* x1,
     double* w4 = malloc(n * sizeof(double));
     double* w5 = malloc(n * sizeof(double));
     double* w6 = malloc(n * sizeof(double));
-    // double v1[n]; double w1[n];
-    // double v2[n]; double w2[n];
-    // double v3[n]; double w3[n];
-    // double v4[n]; double w4[n];
-    // double v5[n]; double w5[n];
-    // double v6[n]; double w6[n];
-    // double v7[n]; double v8[n];
+    // printf("fill vectors\n");
     for(size_t i=0; i<n; i++){
+        // printf("i=%lu\n", (unsigned long)i);
+        // printf("v1\n");
+        // printf("p1x1[i]-2=%u\n", p1x1[i]-2);
         v1[i] = (double) cubeco[p1x1[i]-2][0];
+        // printf("w1\n");
         w1[i] = (double) cubeco[p1[i]-1][0];
+        // printf("v2\n");
         v2[i] = (double) cubeco[p1x2[i]-2][0];
         w2[i] = (double) cubeco[p1[i]][0];
         v3[i] = (double) cubeco[p1x1[i]-2][1];
@@ -260,12 +265,16 @@ double** GetPoints(size_t** cubeco, double* values, size_t* p1, unsigned* x1,
         v5[i] = (double) cubeco[p1x1[i]-2][2];
         w5[i] = (double) cubeco[p1[i]][2];
         v6[i] = (double) cubeco[p1x2[i]-2][2];
+        // printf("w6\n");
         w6[i] = (double) cubeco[p1[i]+4][2];
+        // printf("v7\n");
         v7[i] = values[p1x1[i]-2];
+        // printf("v8\n");
         v8[i] = values[p1x2[i]-2];
     }
     free(p1x1);
     free(p1x2);
+    // printf("fill out\n");
     double** out = malloc(8 * sizeof(double*));
     out[0] = average(lambdamu, v1, w1, n);
     free(v1); free(w1);
@@ -480,16 +489,19 @@ double** computeContour3d(
               unsigned* wcols = malloc(lwcols * sizeof(unsigned));
               printf("totalLength = lwrows*(lwcols-1) = %u\n", lwrows*(lwcols-1));
               wcols[0] = nedge;
+              // printf("fill wcols\n");
               for(unsigned k=1; k<lwcols; k++){
                 wcols[k] = (*(*special_pos[c])[j])[k-1] - 1;
               }
+              // printf("ed\n");
               unsigned** ed = subsetMatrix(edgesp1index, wrows, wcols, lwrows, lwcols);
               // freeMatrix_u(edgesp1index, nR3); fait planter
               // printf("ed[95][6]=%u\n", ed[95][6]);
               free(wrows);
               free(wcols);
+              // printf("col0ed\n");
               size_t* col0ed = malloc(lwrows * sizeof(size_t));
-              for(size_t i=0; i<lwrows; i++){
+              for(unsigned i=0; i<lwrows; i++){
                 col0ed[i] = (size_t) ed[i][0];
               }
               // for(unsigned i=0; i<lwrows; i++){
@@ -497,20 +509,27 @@ double** computeContour3d(
               // }
               size_t* col0edrep = repeach(col0ed, lwcols-1, lwrows);
               free(col0ed);
+              // printf("edge1\n");
               unsigned* edge1 = matrix2vectorMinusFirstColumn(ed, lwrows, lwcols);
               freeMatrix_u(ed, lwrows);
               unsigned totalLength3 = lwrows*(lwcols-1);
+              // printf("xx1 and xx2\n");
               unsigned* xx1 = malloc(totalLength3 * sizeof(unsigned));
               unsigned* xx2 = malloc(totalLength3 * sizeof(unsigned));
-              for(size_t i=0; i<totalLength3; i++){
+              for(unsigned i=0; i<totalLength3; i++){
                   unsigned* EPi = EdgePoints[edge1[i]-1];
                   xx1[i] = EPi[1];
+                  // if(c==4){
+                  //   printf("xx1[%u]=%u", i, xx1[i]);
+                  // }
                   xx2[i] = EPi[2];
               }
               free(edge1);
+              // printf("points3\n");
               double** points3 = GetPoints(cubeco3, values3, col0edrep, xx1,
                                  xx2, (size_t) totalLength3);
               // printf("points3[0][0]=%f\n", points3[0][0]);
+              // printf("triangles3\n");
               double** triangles3 = CalPoints(points3, totalLength3);
               // printf("triangles3[3][0]=%f\n", triangles3[3][0]);
               free(xx1); free(xx2);

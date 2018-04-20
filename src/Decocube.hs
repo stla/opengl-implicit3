@@ -40,7 +40,7 @@ voxel a = makeVoxel (fDecocube a) ((-1.3,1.3),(-1.3,1.3),(-1.3,1.3))
 
 trianglesDecocube :: Voxel -> Double -> IO [NTriangle]
 trianglesDecocube vxl l = do
-  triangles <- computeContour3d'' vxl Nothing l
+  triangles <- computeContour3d'' vxl Nothing l False
   return $ map fromTriangle triangles
 
 display :: Context -> DisplayCallback

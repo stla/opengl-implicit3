@@ -39,7 +39,7 @@ voxel a b = makeVoxel (fOrthocircle a b)
 
 trianglesOrthocircle :: Voxel -> Double -> IO [NTriangle]
 trianglesOrthocircle vxl l = do
-  triangles <- computeContour3d'' vxl Nothing l
+  triangles <- computeContour3d'' vxl Nothing l False
   return $ map fromTriangle triangles
 
 display :: Context -> DisplayCallback

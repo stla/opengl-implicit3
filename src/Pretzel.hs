@@ -1,4 +1,4 @@
-module GoursatColored
+module Pretzel
   ( main )
   where
 import           Data.IORef
@@ -20,24 +20,20 @@ data Context = Context
     , contextColors    :: IORef [Color4 GLfloat]
     }
 
-fGoursat :: Double -> Double -> XYZ -> Double
-fGoursat a b (x,y,z) =
-  x4 + y4 + z4 + a*x2y2z2*x2y2z2 + b*x2y2z2
+fPretzel :: Double -> XYZ -> Double
+fPretzel c (x,y,z) =
+  (((x-1)*(x-1) + y2 - c2) * ((x+1)*(x+1) + y2 - c2))^2 + z2
   where
-  x2 = x*x
   y2 = y*y
   z2 = z*z
-  x2y2z2 = x2+y2+z2
-  x4 = x2*x2
-  y4 = y2*y2
-  z4 = z2*z2
+  c2 = c*c
 
-voxel :: Double -> Double -> IO Voxel
-voxel a b = makeVoxel (fGoursat a b) ((-3,3),(-3,3),(-3,3))
-                      (200, 200, 200)
+voxel :: Double -> IO Voxel
+voxel c = makeVoxel (fPretzel c) ((-3,3),(-2,2),(-2,2))
+                    (200, 200, 200)
 
-trianglesGoursat :: Voxel -> Double -> IO ([Triangle], Double)
-trianglesGoursat vxl l = computeContour3d''' vxl Nothing l False
+trianglesPretzel :: Voxel -> Double -> IO ([Triangle], Double)
+trianglesPretzel vxl l = computeContour3d''' vxl Nothing l True
 
 funColor :: Int -> Double -> Triangle -> Color4 GLfloat
 funColor colormap dmax triangle = palette !! j
@@ -79,14 +75,14 @@ resize zoom s@(Size w h) = do
   matrixMode $= Projection
   loadIdentity
   perspective 45.0 (w'/h') 1.0 100.0
-  lookAt (Vertex3 0 0 (-10+zoom)) (Vertex3 0 0 0) (Vector3 0 1 0)
+  lookAt (Vertex3 0 0 (-7+zoom)) (Vertex3 0 0 0) (Vector3 0 1 0)
   matrixMode $= Modelview 0
   where
     w' = realToFrac w
     h' = realToFrac h
 
 keyboard :: IORef GLfloat -> IORef GLfloat -> IORef GLfloat -- rotations
-         -> IORef Double -> IORef Double -- parameters a and b
+         -> IORef Double -- parameter c
          -> IORef Double -- isolevel
          -> IORef Voxel
          -> IORef ([Triangle], Double)
@@ -94,8 +90,8 @@ keyboard :: IORef GLfloat -> IORef GLfloat -> IORef GLfloat -- rotations
          -> IORef Int -- color palette
          -> IORef Double -- zoom
          -> KeyboardCallback
-keyboard rot1 rot2 rot3 a b l voxelRef trianglesRef colorsRef p zoom c _ = do
-  case c of
+keyboard rot1 rot2 rot3 c l voxelRef trianglesRef colorsRef p zoom char _ = do
+  case char of
     'e' -> rot1 $~! subtract 2
     'r' -> rot1 $~! (+ 2)
     't' -> rot2 $~! subtract 2
@@ -105,46 +101,22 @@ keyboard rot1 rot2 rot3 a b l voxelRef trianglesRef colorsRef p zoom c _ = do
     'm' -> zoom $~! (+ 1)
     'l' -> zoom $~! subtract 1
     'f' -> do
-             a $~! (+ 0.02)
-             a' <- get a
-             b' <- get b
-             vxl <- voxel a' b'
+             c $~! (+ 0.02)
+             c' <- get c
+             vxl <- voxel c'
              writeIORef voxelRef vxl
              l' <- get l
-             triangles <- trianglesGoursat vxl l'
+             triangles <- trianglesPretzel vxl l'
              writeIORef trianglesRef triangles
              p' <- get p
              writeIORef colorsRef $ map (funColor p' (snd triangles)) (fst triangles)
     'v' -> do
-             a $~! subtract 0.02
-             a' <- get a
-             b' <- get b
-             vxl <- voxel a' b'
+             c $~! subtract 0.02
+             c' <- get c
+             vxl <- voxel c'
              writeIORef voxelRef vxl
              l' <- get l
-             triangles <- trianglesGoursat vxl l'
-             writeIORef trianglesRef triangles
-             p' <- get p
-             writeIORef colorsRef $ map (funColor p' (snd triangles)) (fst triangles)
-    'g' -> do
-             b $~! (+ 0.03)
-             a' <- get a
-             b' <- get b
-             vxl <- voxel a' b'
-             writeIORef voxelRef vxl
-             l' <- get l
-             triangles <- trianglesGoursat vxl l'
-             writeIORef trianglesRef triangles
-             p' <- get p
-             writeIORef colorsRef $ map (funColor p' (snd triangles)) (fst triangles)
-    'b' -> do
-             b $~! subtract 0.03
-             a' <- get a
-             b' <- get b
-             vxl <- voxel a' b'
-             writeIORef voxelRef vxl
-             l' <- get l
-             triangles <- trianglesGoursat vxl l'
+             triangles <- trianglesPretzel vxl l'
              writeIORef trianglesRef triangles
              p' <- get p
              writeIORef colorsRef $ map (funColor p' (snd triangles)) (fst triangles)
@@ -152,15 +124,15 @@ keyboard rot1 rot2 rot3 a b l voxelRef trianglesRef colorsRef p zoom c _ = do
              l $~! (+ 0.25)
              l' <- get l
              vxl <- get voxelRef
-             triangles <- trianglesGoursat vxl l'
+             triangles <- trianglesPretzel vxl l'
              writeIORef trianglesRef triangles
              p' <- get p
              writeIORef colorsRef $ map (funColor p' (snd triangles)) (fst triangles)
     'n' -> do
-             l $~! subtract 0.25
+             l $~! (\x -> if x>0.25 then x-0.25 else x)
              l' <- get l
              vxl <- get voxelRef
-             triangles <- trianglesGoursat vxl l'
+             triangles <- trianglesPretzel vxl l'
              writeIORef trianglesRef triangles
              p' <- get p
              writeIORef colorsRef $ map (funColor p' (snd triangles)) (fst triangles)
@@ -176,7 +148,7 @@ keyboard rot1 rot2 rot3 a b l voxelRef trianglesRef colorsRef p zoom c _ = do
 main :: IO ()
 main = do
   _ <- getArgsAndInitialize
-  _ <- createWindow "Goursat surface"
+  _ <- createWindow "Pretzel"
   windowSize $= Size 500 500
   initialDisplayMode $= [RGBAMode, DoubleBuffered, WithDepthBuffer]
   clearColor $= white
@@ -194,12 +166,11 @@ main = do
   rot2 <- newIORef 0.0
   rot3 <- newIORef 0.0
   zoom <- newIORef 0.0
-  a <- newIORef (-0.27)
-  b <- newIORef (-0.5)
-  l <- newIORef 2.0
-  vxl <- voxel (-0.27) (-0.5)
+  c <- newIORef 1.0
+  l <- newIORef 1.0
+  vxl <- voxel 1.0
   voxelRef <- newIORef vxl
-  triangles <- trianglesGoursat vxl 2.0
+  triangles <- trianglesPretzel vxl 1.0
   trianglesRef <- newIORef triangles
   colorsRef <- newIORef (map (funColor 0 (snd triangles)) (fst triangles))
   pRef <- newIORef 0
@@ -211,15 +182,15 @@ main = do
                                       contextTriangles = trianglesRef,
                                       contextColors = colorsRef}
   reshapeCallback $= Just (resize 0)
-  keyboardCallback $= Just (keyboard rot1 rot2 rot3 a b l voxelRef trianglesRef colorsRef pRef zoom)
+  keyboardCallback $= Just (keyboard rot1 rot2 rot3 c l voxelRef trianglesRef colorsRef pRef zoom)
   idleCallback $= Nothing
-  putStrLn "*** Goursat surface ***\n\
+  putStrLn "*** Pretzel ***\n\
         \    To quit, press q.\n\
         \    Scene rotation:\n\
         \        e, r, t, y, u, i\n\
         \    Zoom: l, m\n\
-        \    Increase/decrease parameters:\n\
-        \        f, v, g, b\n\
+        \    Increase/decrease parameter:\n\
+        \        f, v\n\
         \    Increase/decrease isolevel:\n\
         \        h, n\n\
         \    Change color palette: p (this takes a while...) \n\

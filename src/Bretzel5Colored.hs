@@ -45,7 +45,7 @@ voxmax = unsafePerformIO $ voxelMax voxel
 
 trianglesBretz :: Double -> IO ([NTriangle], [Color4 GLfloat])
 trianglesBretz level = do
-  (triangles, d2max) <- computeContour3d''' voxel (Just voxmax) level
+  (triangles, d2max) <- computeContour3d''' voxel (Just voxmax) level False
   let ntriangles = map fromTriangle triangles
       colors = map (funColor d2max) triangles
   return (ntriangles, colors)

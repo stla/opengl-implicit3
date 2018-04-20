@@ -36,7 +36,7 @@ voxel n1 n2 = makeVoxel (fSE n1 n2) ((-1.5,1.5),(-1.5,1.5),(-1.5,1.5))
 
 trianglesSE :: Voxel -> IO ([NTriangle], [Color4 GLfloat])
 trianglesSE vxl = do
-  (triangles, d2max) <- computeContour3d''' vxl Nothing 1.0
+  (triangles, d2max) <- computeContour3d''' vxl Nothing 1.0 False
   let ntriangles = map fromTriangle triangles
       colors = map (funColor d2max) triangles
   return (ntriangles, colors)

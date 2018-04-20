@@ -38,7 +38,7 @@ voxel a b = makeVoxel (fGoursat a b) ((-3,3),(-3,3),(-3,3))
 
 trianglesGoursat :: Voxel -> Double -> IO [NTriangle]
 trianglesGoursat vxl l = do
-  triangles <- computeContour3d'' vxl Nothing l
+  triangles <- computeContour3d'' vxl Nothing l False
   return $ map fromTriangle triangles
 
 display :: Context -> DisplayCallback

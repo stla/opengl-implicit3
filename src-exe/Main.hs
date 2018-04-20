@@ -29,5 +29,5 @@ main = do
     -- putStrLn "c <- test done"
     -- print $ c
     vxl <- makeVoxel f ((-2,2),(-2,2),(-2,2)) (5,5,5)
-    c <- computeContour3d vxl (Just 12) 1
+    c <- computeContour3d vxl (Just 12) 1 
     print c

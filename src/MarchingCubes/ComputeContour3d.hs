@@ -2,9 +2,9 @@
 module MarchingCubes.ComputeContour3d
   (computeContour3d, computeContour3d', computeContour3d'', computeContour3d''')
   where
-import           Control.Monad                 ((=<<))
--- import           Data.List                     (transpose)
-import           Data.Tuple.Extra              (fst3, snd3, thd3)
+import           Control.Monad                 ((=<<), when)
+import           Data.List                     (transpose)
+import           Data.Tuple.Extra              (fst3, snd3, thd3, (&&&))
 import           Foreign.C.Types
 import           Foreign.Marshal.Alloc         (free, mallocBytes)
 import           Foreign.Marshal.Array         (peekArray)
@@ -39,32 +39,46 @@ computeContour3d voxel voxmax level = do
     free nrowsPtr
     return (result, fromIntegral nrows)
 
-computeContour3d' :: Voxel -> Maybe Double -> Double
+rescale :: ((Double,Double),(Double,Double),(Double,Double)) -> (Int,Int,Int)
+        -> Triangle -> Triangle
+rescale ((xm,xM),(ym,yM),(zm,zM)) (nx,ny,nz) ((x1,y1,z1),(x2,y2,z2),(x3,y3,z3)) =
+    ((sx x1, sy y1, sz z1), (sx x2, sy y2, sz z2), (sx x3, sy y3, sz z3))
+    where
+    s a b n u = a + (b-a) * u / fromIntegral (n-1)
+    sx = s xm xM nx
+    sy = s ym yM ny
+    sz = s zm zM nz
+
+computeContour3d' :: Voxel -> Maybe Double -> Double -> Bool
                   -> IO [Triangle]
-computeContour3d' voxel voxmax level = do
+computeContour3d' voxel voxmax level summary = do
     (ppCDouble, nrows) <- computeContour3d voxel voxmax level
     points <- mapM (peekArray 3) =<< peekArray nrows ppCDouble
+    when summary $ do
+      let nxyz = snd3 voxel
+      let xyzbounds = thd3 voxel
+      let tpoints = transpose (map (map realToFrac) points)
+          xm = minimum (tpoints !! 0)
+          xM = maximum (tpoints !! 0)
+          ym = minimum (tpoints !! 1)
+          yM = maximum (tpoints !! 1)
+          zm = minimum (tpoints !! 2)
+          zM = maximum (tpoints !! 2)
+      putStrLn "Bounds:"
+      print $ (fst3 &&& snd3) $ rescale xyzbounds nxyz ((xm,ym,zm),(xM,yM,zM),(0/0,0/0,0/0))
     return $ toTriangles (map (map realToFrac) points)
 
-computeContour3d'' :: Voxel -> Maybe Double -> Double
+computeContour3d'' :: Voxel -> Maybe Double -> Double -> Bool
                    -> IO [Triangle]
-computeContour3d'' voxel voxmax level = do
-  triangles <- computeContour3d' voxel voxmax level
+computeContour3d'' voxel voxmax level summary = do
+  triangles <- computeContour3d' voxel voxmax level summary
   let nxyz = snd3 voxel
   let xyzbounds = thd3 voxel
   return $ map (rescale xyzbounds nxyz) triangles
-    where
-    rescale ((xm,xM),(ym,yM),(zm,zM)) (nx,ny,nz) ((x1,y1,z1),(x2,y2,z2),(x3,y3,z3)) =
-        ((sx x1, sy y1, sz z1), (sx x2, sy y2, sz z2), (sx x3, sy y3, sz z3))
-        where
-        s a b n u = a + (b-a) * u / fromIntegral (n-1)
-        sx = s xm xM nx
-        sy = s ym yM ny
-        sz = s zm zM nz
 
-computeContour3d''' :: Voxel -> Maybe Double -> Double
+computeContour3d''' :: Voxel -> Maybe Double -> Double -> Bool
                     -> IO ([Triangle], Double)
-computeContour3d''' voxel voxmax level = do
-  triangles <- computeContour3d'' voxel voxmax level
+computeContour3d''' voxel voxmax level summary = do
+  triangles <- computeContour3d'' voxel voxmax level summary
   let norm2max = maximum (map triangleNorm2Center triangles)
   return (triangles, norm2max)

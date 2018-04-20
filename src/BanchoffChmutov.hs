@@ -32,7 +32,7 @@ voxel n = makeVoxel (function n) ((-1.3,1.3),(-1.3,1.3),(-1.3,1.3))
 
 trianglesBC :: Voxel -> Double -> IO [NTriangle]
 trianglesBC vxl l = do
-  triangles <- computeContour3d'' vxl Nothing l
+  triangles <- computeContour3d'' vxl Nothing l False
   return $ map fromTriangle triangles
 
 display :: Context -> DisplayCallback
