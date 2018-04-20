@@ -34,6 +34,7 @@ library
                      , Decocube
                      , BanchoffChmutov
                      , KusnerSchmitt
+                     , SuperEllipsoid
   build-depends:       base >= 4.7 && < 5
                      , OpenGL
                      , GLUT
@@ -151,6 +152,18 @@ executable kusnerschmitt
   hs-source-dirs:      src-exe
   main-is:             ExeKusnerSchmitt.hs
   ghc-options:         -fllvm -main-is ExeKusnerSchmitt
+  build-depends:       base >= 4.7 && < 5
+                     , opengl-implicit3
+  default-language:    Haskell2010
+
+executable superellipsoid
+  if flag(exe)
+    buildable: True
+  else
+    buildable: False
+  hs-source-dirs:      src-exe
+  main-is:             ExeSuperEllipsoid.hs
+  ghc-options:         -fllvm -main-is ExeSuperEllipsoid
   build-depends:       base >= 4.7 && < 5
                      , opengl-implicit3
   default-language:    Haskell2010
