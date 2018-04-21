@@ -1,11 +1,15 @@
 module BanchoffChmutov
   (main)
   where
+import qualified Data.ByteString                   as B
 import           Data.IORef
+import           Graphics.Rendering.OpenGL.Capture (capturePPM)
 import           Graphics.Rendering.OpenGL.GL
 import           Graphics.UI.GLUT
 import           MarchingCubes
-import           Math.Polynomial.Chebyshev    (evalT)
+import           Math.Polynomial.Chebyshev         (evalT)
+import           Text.Printf
+import           Utils.ConvertPPM
 import           Utils.OpenGL
 
 data Context = Context
@@ -78,8 +82,9 @@ keyboard :: IORef GLfloat -> IORef GLfloat -> IORef GLfloat -- rotations
          -> IORef Voxel
          -> IORef [NTriangle]
          -> IORef Double -- zoom
+         -> IORef GLint -- screenshot
          -> KeyboardCallback
-keyboard rot1 rot2 rot3 n l voxelRef trianglesRef zoom c _ = do
+keyboard rot1 rot2 rot3 n l voxelRef trianglesRef zoom capture c _ = do
   case c of
     'e' -> rot1 $~! subtract 2
     'r' -> rot1 $~! (+ 2)
@@ -117,6 +122,13 @@ keyboard rot1 rot2 rot3 n l voxelRef trianglesRef zoom c _ = do
              vxl <- get voxelRef
              triangles <- trianglesBC vxl l'
              writeIORef trianglesRef triangles
+    'c' -> do
+      i <- get capture
+      let ppm = printf "png/pic%04d.ppm" i
+          png = printf "png/BanchoffChmutov%04d.png" i
+      (>>=) capturePPM (B.writeFile ppm)
+      convert ppm png True
+      capture $~! (+1)
     'q' -> leaveMainLoop
     _   -> return ()
   postRedisplay Nothing
@@ -144,9 +156,9 @@ main = do
   rot3 <- newIORef 0.0
   zoom <- newIORef 0.0
   n <- newIORef 4
-  l <- newIORef 0.0
   vxl <- voxel 4
   voxelRef <- newIORef vxl
+  l <- newIORef 0.0
   triangles <- trianglesBC vxl 0.0
   trianglesRef <- newIORef triangles
   displayCallback $= display Context {contextRot1 = rot1,
@@ -156,7 +168,8 @@ main = do
                                       contextVoxel = voxelRef,
                                       contextTriangles = trianglesRef}
   reshapeCallback $= Just (resize 0)
-  keyboardCallback $= Just (keyboard rot1 rot2 rot3 n l voxelRef trianglesRef zoom)
+  capture <- newIORef 0
+  keyboardCallback $= Just (keyboard rot1 rot2 rot3 n l voxelRef trianglesRef zoom capture)
   idleCallback $= Nothing
   putStrLn "*** Decocube ***\n\
         \    To quit, press q.\n\
@@ -167,5 +180,6 @@ main = do
         \        f, v\n\
         \    Increase/decrease isolevel:\n\
         \        h, n\n\
+        \    Screenshot: c\n\
         \"
   mainLoop

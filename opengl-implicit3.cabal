@@ -38,6 +38,7 @@ library
                      , Pretzel
                      , KleinBottle
                      , Valentine
+                     , Utils.ConvertPPM
   build-depends:       base >= 4.7 && < 5
                      , OpenGL
                      , GLUT
@@ -49,6 +50,8 @@ library
                      , polynomial
                      , gl-capture
                      , bytestring
+                     , hip
+                     , directory
   default-language:    Haskell2010
   other-extensions:    ForeignFunctionInterface
   include-dirs:        C

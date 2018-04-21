@@ -1,15 +1,18 @@
 module KusnerSchmitt
   ( main )
   where
--- import           Control.Monad                 (when)
+import qualified Data.ByteString                   as B
 import           Data.IORef
+import           Graphics.Rendering.OpenGL.Capture (capturePPM)
 import           Graphics.Rendering.OpenGL.GL
-import           Graphics.UI.GLUT              hiding (Triangle)
+import           Graphics.UI.GLUT                  hiding (Triangle)
 import           MarchingCubes
-import           MarchingCubes.Utils.Triangles (triangleNorm2Center)
+import           MarchingCubes.Utils.Triangles     (triangleNorm2Center)
 import           System.IO.Unsafe
+import           Utils.ConvertPPM
 import           Utils.OpenGL
 import           Utils.Palettes
+import           Text.Printf
 
 funColor :: Double -> Triangle -> Color4 GLfloat
 funColor dmax triangle = colors !! j
@@ -78,7 +81,7 @@ resize zoom s@(Size w h) = do
   matrixMode $= Projection
   loadIdentity
   perspective 45.0 (w'/h') 1.0 100.0
-  lookAt (Vertex3 0 0 (-6+zoom)) (Vertex3 0 0 0) (Vector3 0 1 0)
+  lookAt (Vertex3 0 0 (-4.5+zoom)) (Vertex3 0 0 0) (Vector3 0 1 0)
   matrixMode $= Modelview 0
   where
     w' = realToFrac w
@@ -88,8 +91,9 @@ keyboard :: IORef GLfloat -> IORef GLfloat -> IORef GLfloat -- rotations
          -> IORef Double -- isolevel
          -> IORef ([NTriangle], [Color4 GLfloat])
          -> IORef Double -- zoom
+         -> IORef GLint -- screenshot
          -> KeyboardCallback
-keyboard rot1 rot2 rot3 l trianglesRef zoom c _ = do
+keyboard rot1 rot2 rot3 l trianglesRef zoom capture c _ = do
   case c of
     'e' -> rot1 $~! subtract 2
     'r' -> rot1 $~! (+ 2)
@@ -109,6 +113,13 @@ keyboard rot1 rot2 rot3 l trianglesRef zoom c _ = do
              l' <- get l
              triangles <- trianglesKS l'
              writeIORef trianglesRef triangles
+    'c' -> do
+      i <- get capture
+      let ppm = printf "png/pic%04d.ppm" i
+          png = printf "png/KusnerSchmitt%04d.png" i
+      (>>=) capturePPM (B.writeFile ppm)
+      convert ppm png True
+      capture $~! (+1)
     'q' -> leaveMainLoop
     _   -> return ()
   postRedisplay Nothing
@@ -145,7 +156,8 @@ main = do
                                       contextZoom = zoom,
                                       contextTriangles = trianglesRef}
   reshapeCallback $= Just (resize 0)
-  keyboardCallback $= Just (keyboard rot1 rot2 rot3 level trianglesRef zoom)
+  capture <- newIORef 0
+  keyboardCallback $= Just (keyboard rot1 rot2 rot3 level trianglesRef zoom capture)
   idleCallback $= Nothing
   putStrLn "*** Kusner-Schmitt surface ***\n\
         \    To quit, press q.\n\
@@ -153,5 +165,6 @@ main = do
         \        e, r, t, y, u, i\n\
         \    Zoom: l, m\n\
         \    Increase/decrease isolevel: h, n\n\
+        \    Screenshot: c\n\
         \"
   mainLoop

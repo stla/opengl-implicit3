@@ -23,3 +23,11 @@ Bretzel:
 Valentine heart:
 
 ![gfycat](https://thumbs.gfycat.com/ImpassionedAlertAmethystgemclam-size_restricted.gif)
+
+Banchoff-Chmutov surfaces:
+
+![Imgur](https://i.imgur.com/KOApMfA.png)
+
+Kusner-Schmitt surface:
+
+![Imgur](https://i.imgur.com/kMNiTuZ.png)
