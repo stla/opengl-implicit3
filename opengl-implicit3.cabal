@@ -36,6 +36,8 @@ library
                      , KusnerSchmitt
                      , SuperEllipsoid
                      , Pretzel
+                     , KleinBottle
+                     , Valentine
   build-depends:       base >= 4.7 && < 5
                      , OpenGL
                      , GLUT
@@ -45,6 +47,8 @@ library
                      , vector
                      , containers
                      , polynomial
+                     , gl-capture
+                     , bytestring
   default-language:    Haskell2010
   other-extensions:    ForeignFunctionInterface
   include-dirs:        C
@@ -177,6 +181,18 @@ executable pretzel
   hs-source-dirs:      src-exe
   main-is:             ExePretzel.hs
   ghc-options:         -fllvm -main-is ExePretzel
+  build-depends:       base >= 4.7 && < 5
+                     , opengl-implicit3
+  default-language:    Haskell2010
+
+executable valentine
+  if flag(exe)
+    buildable: True
+  else
+    buildable: False
+  hs-source-dirs:      src-exe
+  main-is:             ExeValentine.hs
+  ghc-options:         -fllvm -main-is ExeValentine
   build-depends:       base >= 4.7 && < 5
                      , opengl-implicit3
   default-language:    Haskell2010

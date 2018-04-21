@@ -1,12 +1,14 @@
-module Bretzel5
+module KleinBottle
   ( main )
   where
 import           Data.IORef
 import           Graphics.Rendering.OpenGL.GL
-import           Graphics.UI.GLUT
+import           Graphics.UI.GLUT              hiding (Triangle)
 import           MarchingCubes
+import           MarchingCubes.Utils.Triangles (triangleNorm2Center)
 import           System.IO.Unsafe
 import           Utils.OpenGL
+import           Utils.Palettes
 
 data Context = Context
     {
@@ -14,32 +16,40 @@ data Context = Context
     , contextRot2      :: IORef GLfloat
     , contextRot3      :: IORef GLfloat
     , contextZoom      :: IORef Double
-    , contextTriangles :: IORef [NTriangle]
     }
 
-red :: Color4 GLfloat
-red = Color4 1 0 0 1
-
-fBretz :: XYZ -> Double
-fBretz (x,y,z) = ((x2+y2/4-1)*(x2/4+y2-1))^2 + z*z
+funColor :: Double -> Triangle -> Color4 GLfloat
+funColor dmax triangle = colors !! j
   where
-  x2 = x*x
-  y2 = y*y
+  colors = colorRamp' "viridis" 256
+  d = triangleNorm2Center triangle
+  j = floor (d*255/dmax)
+
+fKB :: XYZ -> Double
+fKB (x,y,z) = (x2y2z2 + 2*y -1)*(a*a - 8*z2) + 16*x*z*a
+  where
+  z2 = z*z
+  x2y2z2 = x*x + y*y + z2
+  a = x2y2z2 - 2*y - 1
 
 voxel :: Voxel
 {-# NOINLINE voxel #-}
-voxel = unsafePerformIO $ makeVoxel fBretz
-                          ((-2.5,2.5),(-2.5,2.5),(-0.5,0.5))
-                          (150, 150, 100)
+voxel = unsafePerformIO $ makeVoxel fKB
+                          ((-2.7,3.2),(-2.2,3.3),(-3.5,3.9))
+                          (100, 100, 150)
 
 voxmax :: Double
 {-# NOINLINE voxmax #-}
 voxmax = unsafePerformIO $ voxelMax voxel
 
-trianglesBretz :: Double -> IO [NTriangle]
-trianglesBretz level = do
-  triangles <- computeContour3d'' voxel (Just voxmax) level False
-  return $ map fromTriangle triangles
+trianglesKB :: ([NTriangle], [Color4 GLfloat])
+{-# NOINLINE trianglesKB #-}
+trianglesKB = unsafePerformIO $ do
+  (triangles, d2max) <- computeContour3d''' voxel (Just voxmax) 0.0 True
+  let ntriangles = map fromTriangle triangles
+      colors = map (funColor d2max) triangles
+  return (ntriangles, colors)
+
 
 display :: Context -> DisplayCallback
 display context = do
@@ -47,7 +57,7 @@ display context = do
   r1 <- get (contextRot1 context)
   r2 <- get (contextRot2 context)
   r3 <- get (contextRot3 context)
-  triangles <- get (contextTriangles context)
+  let (triangles, colors) = trianglesKB 
   zoom <- get (contextZoom context)
   (_, size) <- get viewport
   loadIdentity
@@ -55,11 +65,11 @@ display context = do
   rotate r1 $ Vector3 1 0 0
   rotate r2 $ Vector3 0 1 0
   rotate r3 $ Vector3 0 0 1
-  renderPrimitive Triangles $ mapM_ drawTriangle triangles
+  renderPrimitive Triangles $ mapM_ drawTriangle (zip triangles colors)
   swapBuffers
   where
-    drawTriangle ((v1,v2,v3), norm) = do
-      materialDiffuse FrontAndBack $= red
+    drawTriangle (((v1,v2,v3), norm), col) = do
+      materialDiffuse FrontAndBack $= col
       normal norm
       vertex v1
       vertex v2
@@ -71,18 +81,16 @@ resize zoom s@(Size w h) = do
   matrixMode $= Projection
   loadIdentity
   perspective 45.0 (w'/h') 1.0 100.0
-  lookAt (Vertex3 0 0 (-6+zoom)) (Vertex3 0 0 0) (Vector3 0 1 0)
+  lookAt (Vertex3 0 0 (-12+zoom)) (Vertex3 0 0 0) (Vector3 0 1 0)
   matrixMode $= Modelview 0
   where
     w' = realToFrac w
     h' = realToFrac h
 
 keyboard :: IORef GLfloat -> IORef GLfloat -> IORef GLfloat -- rotations
-         -> IORef Double -- isolevel
-         -> IORef [NTriangle]
          -> IORef Double -- zoom
          -> KeyboardCallback
-keyboard rot1 rot2 rot3 l trianglesRef zoom c _ = do
+keyboard rot1 rot2 rot3 zoom c _ = do
   case c of
     'e' -> rot1 $~! subtract 2
     'r' -> rot1 $~! (+ 2)
@@ -92,20 +100,6 @@ keyboard rot1 rot2 rot3 l trianglesRef zoom c _ = do
     'i' -> rot3 $~! (+ 2)
     'm' -> zoom $~! (+ 1)
     'l' -> zoom $~! subtract 1
-    'h' -> do
-             l $~! (+ 0.1)
-             l' <- get l
-             triangles <- trianglesBretz l'
-             writeIORef trianglesRef triangles
-    'n' -> do
-             l $~! (\x -> if x>0.1 then x-0.1 else x)
-             l' <- get l
-             putStrLn ("l': " ++ show l')
-             if l'>1e-16
-              then do
-               triangles <- trianglesBretz l'
-               writeIORef trianglesRef triangles
-              else l $~! (+ 0.1)
     'q' -> leaveMainLoop
     _   -> return ()
   postRedisplay Nothing
@@ -114,7 +108,7 @@ keyboard rot1 rot2 rot3 l trianglesRef zoom c _ = do
 main :: IO ()
 main = do
   _ <- getArgsAndInitialize
-  _ <- createWindow "Bretzel"
+  _ <- createWindow "Klein Bottle"
   windowSize $= Size 500 500
   initialDisplayMode $= [RGBAMode, DoubleBuffered, WithDepthBuffer]
   clearColor $= white
@@ -131,23 +125,21 @@ main = do
   rot1 <- newIORef 0.0
   rot2 <- newIORef 0.0
   rot3 <- newIORef 0.0
-  level <- newIORef 0.1
   zoom <- newIORef 0.0
-  triangles <- trianglesBretz 0.1
-  trianglesRef <- newIORef triangles
+--  trianglesRef <- newIORef trianglesKB
   displayCallback $= display Context {contextRot1 = rot1,
                                       contextRot2 = rot2,
                                       contextRot3 = rot3,
-                                      contextZoom = zoom,
-                                      contextTriangles = trianglesRef}
+                                      contextZoom = zoom
+--                                      contextTriangles = trianglesRef
+                                    }
   reshapeCallback $= Just (resize 0)
-  keyboardCallback $= Just (keyboard rot1 rot2 rot3 level trianglesRef zoom)
+  keyboardCallback $= Just (keyboard rot1 rot2 rot3 zoom)
   idleCallback $= Nothing
-  putStrLn "*** Bretzel ***\n\
+  putStrLn "*** Klein bottle ***\n\
         \    To quit, press q.\n\
         \    Scene rotation:\n\
         \        e, r, t, y, u, i\n\
         \    Zoom: l, m\n\
-        \    Increase/decrease isolevel: h, n\n\
         \"
   mainLoop
