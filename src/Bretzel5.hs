@@ -30,7 +30,7 @@ voxel :: Voxel
 {-# NOINLINE voxel #-}
 voxel = unsafePerformIO $ makeVoxel fBretz
                           ((-2.5,2.5),(-2.5,2.5),(-0.5,0.5))
-                          (150, 150, 100)
+                          (200, 200, 100)
 
 voxmax :: Double
 {-# NOINLINE voxmax #-}

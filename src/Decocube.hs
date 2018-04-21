@@ -1,10 +1,14 @@
 module Decocube
   (main)
   where
+import           Control.Monad                     (when)
+import qualified Data.ByteString                   as B
 import           Data.IORef
+import           Graphics.Rendering.OpenGL.Capture (capturePPM)
 import           Graphics.Rendering.OpenGL.GL
 import           Graphics.UI.GLUT
 import           MarchingCubes
+import           Text.Printf
 import           Utils.OpenGL
 
 data Context = Context
@@ -36,24 +40,27 @@ fDecocube a (x,y,z) =
 
 voxel :: Double -> IO Voxel
 voxel a = makeVoxel (fDecocube a) ((-1.3,1.3),(-1.3,1.3),(-1.3,1.3))
-                    (100, 100, 100)
+                    (130, 130, 130)
 
 trianglesDecocube :: Voxel -> Double -> IO [NTriangle]
 trianglesDecocube vxl l = do
   triangles <- computeContour3d'' vxl Nothing l False
   return $ map fromTriangle triangles
 
-display :: Context -> DisplayCallback
-display context = do
+display :: Context -> IORef GLfloat -> DisplayCallback
+display context alpha = do
   clear [ColorBuffer, DepthBuffer]
   r1 <- get (contextRot1 context)
   r2 <- get (contextRot2 context)
   r3 <- get (contextRot3 context)
   triangles <- get (contextTriangles context)
   zoom <- get (contextZoom context)
+  alpha' <- get alpha
+  rotate alpha' $ Vector3 0 1 0
   (_, size) <- get viewport
   loadIdentity
   resize zoom size
+  rotate alpha' $ Vector3 0 1 0
   rotate r1 $ Vector3 1 0 0
   rotate r2 $ Vector3 0 1 0
   rotate r3 $ Vector3 0 0 1
@@ -86,9 +93,11 @@ keyboard :: IORef GLfloat -> IORef GLfloat -> IORef GLfloat -- rotations
          -> IORef Voxel
          -> IORef [NTriangle]
          -> IORef Double -- zoom
+         -> IORef Bool -- animation
          -> KeyboardCallback
-keyboard rot1 rot2 rot3 a l voxelRef trianglesRef zoom c _ = do
+keyboard rot1 rot2 rot3 a l voxelRef trianglesRef zoom anim c _ = do
   case c of
+    'a' -> writeIORef anim True
     'e' -> rot1 $~! subtract 2
     'r' -> rot1 $~! (+ 2)
     't' -> rot2 $~! subtract 2
@@ -133,6 +142,17 @@ keyboard rot1 rot2 rot3 a l voxelRef trianglesRef zoom c _ = do
     _   -> return ()
   postRedisplay Nothing
 
+idle :: IORef Bool -> IORef GLfloat -> IORef Int -> IdleCallback
+idle anim alpha snapshots = do
+    a <- get anim
+    s <- get snapshots
+    when a $ do
+      when (s < 360) $ do
+        let ppm = printf "ppm/decocube%04d.ppm" s
+        (>>=) capturePPM (B.writeFile ppm)
+      alpha $~! (+ 1.0)
+      snapshots $~! (+ 1)
+    postRedisplay Nothing
 
 main :: IO ()
 main = do
@@ -161,15 +181,20 @@ main = do
   voxelRef <- newIORef vxl
   triangles <- trianglesDecocube vxl 0.01
   trianglesRef <- newIORef triangles
+  alpha <- newIORef 0.0
+  snapshots <- newIORef 0
   displayCallback $= display Context {contextRot1 = rot1,
                                       contextRot2 = rot2,
                                       contextRot3 = rot3,
                                       contextZoom = zoom,
                                       contextVoxel = voxelRef,
                                       contextTriangles = trianglesRef}
+                             alpha
   reshapeCallback $= Just (resize 0)
-  keyboardCallback $= Just (keyboard rot1 rot2 rot3 a l voxelRef trianglesRef zoom)
-  idleCallback $= Nothing
+  anim <- newIORef False
+  keyboardCallback $=
+    Just (keyboard rot1 rot2 rot3 a l voxelRef trianglesRef zoom anim)
+  idleCallback $= Just (idle anim alpha snapshots)
   putStrLn "*** Decocube ***\n\
         \    To quit, press q.\n\
         \    Scene rotation:\n\
@@ -179,5 +204,6 @@ main = do
         \        f, v\n\
         \    Increase/decrease isolevel:\n\
         \        h, n\n\
+        \    Animation: a\n\
         \"
   mainLoop

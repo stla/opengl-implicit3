@@ -31,3 +31,7 @@ Banchoff-Chmutov surfaces:
 Kusner-Schmitt surface:
 
 ![Imgur](https://i.imgur.com/kMNiTuZ.png)
+
+Decocube:
+
+![gfycat](https://thumbs.gfycat.com/MilkyWeightyIncatern-size_restricted.gif)

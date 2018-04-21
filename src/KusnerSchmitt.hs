@@ -157,7 +157,8 @@ main = do
                                       contextTriangles = trianglesRef}
   reshapeCallback $= Just (resize 0)
   capture <- newIORef 0
-  keyboardCallback $= Just (keyboard rot1 rot2 rot3 level trianglesRef zoom capture)
+  keyboardCallback $=
+    Just (keyboard rot1 rot2 rot3 level trianglesRef zoom capture)
   idleCallback $= Nothing
   putStrLn "*** Kusner-Schmitt surface ***\n\
         \    To quit, press q.\n\

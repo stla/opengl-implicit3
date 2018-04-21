@@ -30,7 +30,7 @@ fPretzel c (x,y,z) =
 
 voxel :: Double -> IO Voxel
 voxel c = makeVoxel (fPretzel c) ((-3,3),(-2,2),(-2,2))
-                    (200, 200, 200)
+                    (300, 200, 200)
 
 trianglesPretzel :: Voxel -> Double -> IO ([Triangle], Double)
 trianglesPretzel vxl l = computeContour3d''' vxl Nothing l True
