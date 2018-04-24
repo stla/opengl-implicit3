@@ -40,6 +40,8 @@ library
                      , Valentine
                      , Utils.ConvertPPM
                      , Spikes
+                     , Utils.Misc
+                     , Spiral
   build-depends:       base >= 4.7 && < 5
                      , OpenGL
                      , GLUT
@@ -209,6 +211,18 @@ executable spikes
   hs-source-dirs:      src-exe
   main-is:             ExeSpikes.hs
   ghc-options:         -fllvm -main-is ExeSpikes
+  build-depends:       base >= 4.7 && < 5
+                     , opengl-implicit3
+  default-language:    Haskell2010
+
+executable spiral
+  if flag(exe)
+    buildable: True
+  else
+    buildable: False
+  hs-source-dirs:      src-exe
+  main-is:             ExeSpiral.hs
+  ghc-options:         -fllvm -main-is ExeSpiral
   build-depends:       base >= 4.7 && < 5
                      , opengl-implicit3
   default-language:    Haskell2010
