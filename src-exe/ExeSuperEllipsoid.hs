@@ -1,5 +1,5 @@
-module ExeSpikes
+module ExeSuperEllipsoid
   where
-import qualified Spikes as S
+import qualified SuperEllipsoid as S
 
 main = S.main
