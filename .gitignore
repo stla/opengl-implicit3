@@ -25,6 +25,7 @@ cabal.project.local
 *.exe
 gallery/
 ztemp.hs
+ztemp2.hs
 ppm/*
 !ppm/.nothing
 png/*

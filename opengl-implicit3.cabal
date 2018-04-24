@@ -39,6 +39,7 @@ library
                      , KleinBottle
                      , Valentine
                      , Utils.ConvertPPM
+                     , Spikes
   build-depends:       base >= 4.7 && < 5
                      , OpenGL
                      , GLUT
@@ -196,6 +197,18 @@ executable valentine
   hs-source-dirs:      src-exe
   main-is:             ExeValentine.hs
   ghc-options:         -fllvm -main-is ExeValentine
+  build-depends:       base >= 4.7 && < 5
+                     , opengl-implicit3
+  default-language:    Haskell2010
+
+executable spikes
+  if flag(exe)
+    buildable: True
+  else
+    buildable: False
+  hs-source-dirs:      src-exe
+  main-is:             ExeSpikes.hs
+  ghc-options:         -fllvm -main-is ExeSpikes
   build-depends:       base >= 4.7 && < 5
                      , opengl-implicit3
   default-language:    Haskell2010
