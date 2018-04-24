@@ -35,3 +35,7 @@ Kusner-Schmitt surface:
 Decocube:
 
 ![gfycat](https://thumbs.gfycat.com/MilkyWeightyIncatern-size_restricted.gif)
+
+Spikes:
+
+![Imgur](https://i.imgur.com/RASpZa4.png)

@@ -279,7 +279,7 @@ main = do
         \        e, r, t, y, u, i\n\
         \    Zoom: l, m\n\
         \    Increase/decrease parameters:\n\
-        \        s, x , d, c, f, v, g, b\n\
+        \        s, x, d, c, f, v, g, b\n\
         \    Increase/decrease isolevel:\n\
         \        h, n\n\
         \    Change color palette: p\n\
