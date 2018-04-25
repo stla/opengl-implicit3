@@ -39,3 +39,7 @@ Decocube:
 Spikes:
 
 ![Imgur](https://i.imgur.com/RASpZa4.png)
+
+Spiral:
+
+![Imgur](https://i.imgur.com/z5jvYHV.png)

@@ -18,10 +18,13 @@ data Context = Context
     , contextTriangles :: IORef [NTriangle]
     }
 
-blue :: Color4 GLfloat
-blue = Color4 0 0 1 1
+purple :: Color4 GLfloat
+purple = Color4 0.63 0.13 0.94 1
 
-fSpiral :: Double -> Double -> Double -> XYZ -> Double
+fSpiral :: Double -- Distance between windings
+        -> Double -- Thickness
+        -> Double -- Cross section: 0 square 1 circle 2 diamond 3 concave diamond
+        -> XYZ -> Double
 fSpiral a b c (x,y,z) = - (min (1 - r'') (b - min r2' r''))
   where
     x2 = x*x
@@ -31,18 +34,16 @@ fSpiral a b c (x,y,z) = - (min (1 - r'') (b - min r2' r''))
     th = atan2 z x
     r' = r + a * th / 2 / pi
     r2 = modulo r' a - a * 0.5
-    r2' = if c == 1
-      then sqrt(r2 * r2 + y2)
-      else if c /= 0
-        then (abs r2 ** temp + abs y ** temp) ** (1/temp)
-        else max (abs r2) (abs y)
+    r2' | c == 1 = sqrt(r2 * r2 + y2)
+        | c /= 0 = (abs r2 ** temp + abs y ** temp) ** (1/temp)
+        | otherwise = max (abs r2) (abs y)
       where
       temp = 2/c
     r'' = sqrt (x2+y2+z2)
 
 voxel :: Double -> Double -> Double -> IO Voxel
 voxel a b c = makeVoxel (fSpiral a b c)
-                        ((-1,1),(-0.2,0.2),(-1,1))
+                        ((-1,1.1),(-0.2,0.2),(-1,1.1))
                         (200, 100, 200)
 
 trianglesSpiral :: Voxel -> IO [NTriangle]
@@ -61,11 +62,11 @@ display context = do
   (_, size) <- get viewport
   loadIdentity
   resize zoom size
-  rotate (r1+90) $ Vector3 1 0 0
+  rotate (r1+130) $ Vector3 1 0 0
   rotate r2 $ Vector3 0 1 0
   rotate r3 $ Vector3 0 0 1
   renderPrimitive Triangles $ do
-    materialDiffuse FrontAndBack $= blue
+    materialDiffuse FrontAndBack $= purple
     mapM_ drawTriangle triangles
   swapBuffers
   where
@@ -139,7 +140,7 @@ keyboard rot1 rot2 rot3 a b c voxelRef trianglesRef zoom char _ = do
              triangles <- trianglesSpiral vxl
              writeIORef trianglesRef triangles
     'h' -> do
-             c $~! (+ 1)
+             c $~! (\x -> if x<=2 then x+1 else 0)
              c' <- get c
              a' <- get a
              b' <- get b
@@ -148,7 +149,7 @@ keyboard rot1 rot2 rot3 a b c voxelRef trianglesRef zoom char _ = do
              triangles <- trianglesSpiral vxl
              writeIORef trianglesRef triangles
     'n' -> do
-             c $~! subtract 1
+             c $~! (\x -> if x>=1 then x-1 else 3)
              c' <- get c
              a' <- get a
              b' <- get b
@@ -184,8 +185,8 @@ main = do
   zoom <- newIORef 0.0
   a <- newIORef 0.3
   b <- newIORef 0.1
-  c <- newIORef 2.0
-  vxl <- voxel 0.3 0.1 2.0
+  c <- newIORef 1.0
+  vxl <- voxel 0.3 0.1 1.0
   voxelRef <- newIORef vxl
   triangles <- trianglesSpiral vxl
   trianglesRef <- newIORef triangles
