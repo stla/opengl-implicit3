@@ -1,4 +1,4 @@
-module Spiral
+module Spikes2D
   ( main )
   where
 import           Data.IORef
@@ -6,7 +6,6 @@ import           Graphics.Rendering.OpenGL.GL
 import           Graphics.UI.GLUT
 import           MarchingCubes
 import           Utils.OpenGL
-import           Utils.Misc
 
 data Context = Context
     {
@@ -18,35 +17,25 @@ data Context = Context
     , contextTriangles :: IORef [NTriangle]
     }
 
-blue :: Color4 GLfloat
-blue = Color4 0 0 1 1
+whitesmoke :: Color4 GLfloat
+whitesmoke = Color4 0.96 0.96 0.96 1
 
-fSpiral :: Double -> Double -> Double -> XYZ -> Double
-fSpiral a b c (x,y,z) = - (min (1 - r'') (b - min r2' r''))
-  where
-    x2 = x*x
-    y2 = y*y
-    z2 = z*z
-    r = sqrt(x2+z2)
-    th = atan2 z x
-    r' = r + a * th / 2 / pi
-    r2 = modulo r' a - a * 0.5
-    r2' = if c == 1
-      then sqrt(r2 * r2 + y2)
-      else if c /= 0
-        then (abs r2 ** temp + abs y ** temp) ** (1/temp)
-        else max (abs r2) (abs y)
-      where
-      temp = 2/c
-    r'' = sqrt (x2+y2+z2)
+fSpikes2D :: Double -- Height of central spike
+          -> Double -- Frequency of spikes in the X direction
+          -> Double -- Frequency of spikes in the Z direction
+          -> Double -- Rate at which the spikes reduce as you move away from the center
+          -> XYZ
+          -> Double
+fSpikes2D a b c d (x,y,z) =
+  -(a * cos(b*x) * cos(c*z) * exp(-d*(x*x+z*z)) - y)
 
-voxel :: Double -> Double -> Double -> IO Voxel
-voxel a b c = makeVoxel (fSpiral a b c)
-                        ((-1,1),(-0.2,0.2),(-1,1))
-                        (200, 100, 200)
+voxel :: Double -> Double -> Double -> Double -> IO Voxel
+voxel a b c d = makeVoxel (fSpikes2D a b c d)
+                          ((-1.1,1.1),(-a,a),(-1.1,1.1))
+                          (100, 100, 100)
 
-trianglesSpiral :: Voxel -> IO [NTriangle]
-trianglesSpiral vxl = do
+trianglesSpikes2D :: Voxel -> IO [NTriangle]
+trianglesSpikes2D vxl = do
   triangles <- computeContour3d'' vxl Nothing 0.0 True
   return $ map fromTriangle triangles
 
@@ -61,11 +50,11 @@ display context = do
   (_, size) <- get viewport
   loadIdentity
   resize zoom size
-  rotate (r1+90) $ Vector3 1 0 0
+  rotate (r1+135) $ Vector3 1 0 0
   rotate r2 $ Vector3 0 1 0
   rotate r3 $ Vector3 0 0 1
   renderPrimitive Triangles $ do
-    materialDiffuse FrontAndBack $= blue
+    materialDiffuse FrontAndBack $= whitesmoke
     mapM_ drawTriangle triangles
   swapBuffers
   where
@@ -88,12 +77,12 @@ resize zoom s@(Size w h) = do
     h' = realToFrac h
 
 keyboard :: IORef GLfloat -> IORef GLfloat -> IORef GLfloat -- rotations
-         -> IORef Double -> IORef Double -> IORef Double -- parameters a, b and c
+         -> IORef Double -> IORef Double -> IORef Double -> IORef Double -- parameters a, b, c and d
          -> IORef Voxel
          -> IORef [NTriangle]
          -> IORef Double -- zoom
          -> KeyboardCallback
-keyboard rot1 rot2 rot3 a b c voxelRef trianglesRef zoom char _ = do
+keyboard rot1 rot2 rot3 a b c d voxelRef trianglesRef zoom char _ = do
   case char of
     'e' -> rot1 $~! subtract 2
     'r' -> rot1 $~! (+ 2)
@@ -103,58 +92,83 @@ keyboard rot1 rot2 rot3 a b c voxelRef trianglesRef zoom char _ = do
     'i' -> rot3 $~! (+ 2)
     'm' -> zoom $~! (+ 1)
     'l' -> zoom $~! subtract 1
-    'f' -> do
-             a $~! (+ 0.025)
+    'd' -> do
+             a $~! (+ 0.1)
              a' <- get a
              b' <- get b
              c' <- get c
-             vxl <- voxel a' b' c'
+             d' <- get d
+             vxl <- voxel a' b' c' d'
              writeIORef voxelRef vxl
-             triangles <- trianglesSpiral vxl
+             triangles <- trianglesSpikes2D vxl
              writeIORef trianglesRef triangles
-    'v' -> do
-             a $~! subtract 0.025
+    'c' -> do
+             a $~! subtract 0.1
              a' <- get a
              b' <- get b
              c' <- get c
-             vxl <- voxel a' b' c'
-             triangles <- trianglesSpiral vxl
+             d' <- get d
+             vxl <- voxel a' b' c' d'
+             triangles <- trianglesSpikes2D vxl
              writeIORef trianglesRef triangles
-    'g' -> do
+    'f' -> do
              b $~! (+ 0.1)
              a' <- get a
              b' <- get b
              c' <- get c
-             vxl <- voxel a' b' c'
+             d' <- get d
+             vxl <- voxel a' b' c' d'
              writeIORef voxelRef vxl
-             triangles <- trianglesSpiral vxl
+             triangles <- trianglesSpikes2D vxl
              writeIORef trianglesRef triangles
-    'b' -> do
+    'v' -> do
              b $~! subtract 0.1
              a' <- get a
              b' <- get b
              c' <- get c
-             vxl <- voxel a' b' c'
+             d' <- get d
+             vxl <- voxel a' b' c' d'
              writeIORef voxelRef vxl
-             triangles <- trianglesSpiral vxl
+             triangles <- trianglesSpikes2D vxl
+             writeIORef trianglesRef triangles
+    'g' -> do
+             c $~! (+ 0.1)
+             c' <- get c
+             a' <- get a
+             b' <- get b
+             d' <- get d
+             vxl <- voxel a' b' c' d'
+             writeIORef voxelRef vxl
+             triangles <- trianglesSpikes2D vxl
+             writeIORef trianglesRef triangles
+    'b' -> do
+             c $~! subtract 0.1
+             c' <- get c
+             a' <- get a
+             b' <- get b
+             d' <- get d
+             vxl <- voxel a' b' c' d'
+             writeIORef voxelRef vxl
+             triangles <- trianglesSpikes2D vxl
              writeIORef trianglesRef triangles
     'h' -> do
-             c $~! (+ 1)
-             c' <- get c
+             d $~! (+ 0.5)
              a' <- get a
              b' <- get b
-             vxl <- voxel a' b' c'
+             c' <- get c
+             d' <- get d
+             vxl <- voxel a' b' c' d'
              writeIORef voxelRef vxl
-             triangles <- trianglesSpiral vxl
+             triangles <- trianglesSpikes2D vxl
              writeIORef trianglesRef triangles
     'n' -> do
-             c $~! subtract 1
-             c' <- get c
+             d $~! subtract 0.5
              a' <- get a
              b' <- get b
-             vxl <- voxel a' b' c'
-             writeIORef voxelRef vxl
-             triangles <- trianglesSpiral vxl
+             c' <- get c
+             d' <- get d
+             vxl <- voxel a' b' c' d'
+             triangles <- trianglesSpikes2D vxl
              writeIORef trianglesRef triangles
     'q' -> leaveMainLoop
     _   -> return ()
@@ -164,7 +178,7 @@ keyboard rot1 rot2 rot3 a b c voxelRef trianglesRef zoom char _ = do
 main :: IO ()
 main = do
   _ <- getArgsAndInitialize
-  _ <- createWindow "Spiral"
+  _ <- createWindow "Spikes2D"
   windowSize $= Size 500 500
   initialDisplayMode $= [RGBAMode, DoubleBuffered, WithDepthBuffer]
   clearColor $= black
@@ -182,12 +196,13 @@ main = do
   rot2 <- newIORef 0.0
   rot3 <- newIORef 0.0
   zoom <- newIORef 0.0
-  a <- newIORef 0.3
-  b <- newIORef 0.1
-  c <- newIORef 2.0
-  vxl <- voxel 0.3 0.1 2.0
+  a <- newIORef 0.4
+  b <- newIORef 15.0
+  c <- newIORef 15.0
+  d <- newIORef 2.5
+  vxl <- voxel 0.4 15 15 2.5
   voxelRef <- newIORef vxl
-  triangles <- trianglesSpiral vxl
+  triangles <- trianglesSpikes2D vxl
   trianglesRef <- newIORef triangles
   displayCallback $= display Context {contextRot1 = rot1,
                                       contextRot2 = rot2,
@@ -196,14 +211,14 @@ main = do
                                       contextVoxel = voxelRef,
                                       contextTriangles = trianglesRef}
   reshapeCallback $= Just (resize 0)
-  keyboardCallback $= Just (keyboard rot1 rot2 rot3 a b c voxelRef trianglesRef zoom)
+  keyboardCallback $= Just (keyboard rot1 rot2 rot3 a b c d voxelRef trianglesRef zoom)
   idleCallback $= Nothing
-  putStrLn "*** Spiral ***\n\
+  putStrLn "*** Spikes2D ***\n\
         \    To quit, press q.\n\
         \    Scene rotation:\n\
         \        e, r, t, y, u, i\n\
         \    Zoom: l, m\n\
         \    Increase/decrease parameters:\n\
-        \        f, v, g, b, h, n\n\
+        \        d, c, f, v, g, b, h, n\n\
         \"
   mainLoop
