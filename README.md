@@ -43,3 +43,7 @@ Spikes:
 Spiral:
 
 ![Imgur](https://i.imgur.com/z5jvYHV.png)
+
+Animated spiral:
+
+![gfycat](https://thumbs.gfycat.com/DependableCaringHog-size_restricted.gif)

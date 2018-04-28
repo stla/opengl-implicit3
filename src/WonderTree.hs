@@ -24,7 +24,7 @@ fWonderTree (x,y,z) =
   cos(4*x/(xyz+0.0001)) + sin(4*y/(xyz+0.0001)) +
   cos(4*y/(xyz+0.0001)) + sin(4*z/(xyz+0.0001)) +
   cos(4*z/(xyz+0.0001)) + sin(4*x/(xyz+0.0001)) +
-  exp(0.1*(xyz-0.2)) - exp(-10*xyz-0.15)
+  exp(0.1*(xyz-0.2)) - exp(-10*(xyz-0.15))
   where
   xyz = x*x+y*y+z*z
 

@@ -1,12 +1,16 @@
 module Spiral
   ( main )
   where
+import           Control.Monad                     (when)
+import qualified Data.ByteString                   as B
 import           Data.IORef
+import           Graphics.Rendering.OpenGL.Capture (capturePPM)
 import           Graphics.Rendering.OpenGL.GL
 import           Graphics.UI.GLUT
 import           MarchingCubes
-import           Utils.OpenGL
+import           Text.Printf
 import           Utils.Misc
+import           Utils.OpenGL
 
 data Context = Context
     {
@@ -51,19 +55,21 @@ trianglesSpiral vxl = do
   triangles <- computeContour3d'' vxl Nothing 0.0 True
   return $ map fromTriangle triangles
 
-display :: Context -> DisplayCallback
-display context = do
+display :: Context -> IORef GLfloat -> DisplayCallback
+display context alpha = do
   clear [ColorBuffer, DepthBuffer]
   r1 <- get (contextRot1 context)
   r2 <- get (contextRot2 context)
   r3 <- get (contextRot3 context)
   triangles <- get (contextTriangles context)
   zoom <- get (contextZoom context)
+  alpha' <- get alpha
   (_, size) <- get viewport
   loadIdentity
   resize zoom size
+--  rotate alpha' $ Vector3 0 1 0
   rotate (r1+130) $ Vector3 1 0 0
-  rotate r2 $ Vector3 0 1 0
+  rotate (r2+alpha') $ Vector3 0 1 0
   rotate r3 $ Vector3 0 0 1
   renderPrimitive Triangles $ do
     materialDiffuse FrontAndBack $= purple
@@ -93,9 +99,11 @@ keyboard :: IORef GLfloat -> IORef GLfloat -> IORef GLfloat -- rotations
          -> IORef Voxel
          -> IORef [NTriangle]
          -> IORef Double -- zoom
+         -> IORef Bool -- anim
          -> KeyboardCallback
-keyboard rot1 rot2 rot3 a b c voxelRef trianglesRef zoom char _ = do
+keyboard rot1 rot2 rot3 a b c voxelRef trianglesRef zoom anim char _ = do
   case char of
+    'a' -> writeIORef anim True
     'e' -> rot1 $~! subtract 2
     'r' -> rot1 $~! (+ 2)
     't' -> rot2 $~! subtract 2
@@ -161,6 +169,18 @@ keyboard rot1 rot2 rot3 a b c voxelRef trianglesRef zoom char _ = do
     _   -> return ()
   postRedisplay Nothing
 
+idle :: IORef Bool -> IORef GLfloat -> IORef Int -> IdleCallback
+idle anim alpha snapshots = do
+    a <- get anim
+    s <- get snapshots
+    when a $ do
+      when (s < 360) $ do
+        let ppm = printf "ppm/spiral%04d.ppm" s
+        (>>=) capturePPM (B.writeFile ppm)
+      alpha $~! (+ 1.0)
+      snapshots $~! (+ 1)
+    postRedisplay Nothing
+
 
 main :: IO ()
 main = do
@@ -190,15 +210,19 @@ main = do
   voxelRef <- newIORef vxl
   triangles <- trianglesSpiral vxl
   trianglesRef <- newIORef triangles
+  alpha <- newIORef 0.0
   displayCallback $= display Context {contextRot1 = rot1,
                                       contextRot2 = rot2,
                                       contextRot3 = rot3,
                                       contextZoom = zoom,
                                       contextVoxel = voxelRef,
                                       contextTriangles = trianglesRef}
+                             alpha
   reshapeCallback $= Just (resize 0)
-  keyboardCallback $= Just (keyboard rot1 rot2 rot3 a b c voxelRef trianglesRef zoom)
-  idleCallback $= Nothing
+  anim <- newIORef False
+  keyboardCallback $= Just (keyboard rot1 rot2 rot3 a b c voxelRef trianglesRef zoom anim)
+  snapshots <- newIORef 0
+  idleCallback $= Just (idle anim alpha snapshots)
   putStrLn "*** Spiral ***\n\
         \    To quit, press q.\n\
         \    Scene rotation:\n\
@@ -206,5 +230,6 @@ main = do
         \    Zoom: l, m\n\
         \    Increase/decrease parameters:\n\
         \        f, v, g, b, h, n\n\
+        \    Animation: a\n\
         \"
   mainLoop
