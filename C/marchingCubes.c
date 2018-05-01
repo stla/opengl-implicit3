@@ -413,15 +413,15 @@ double** computeContour3d(
             }
         }
         if(special){
-          printf("!!! there are special cases !!! (%u)\n", special);
+          printf("!!! there are special cases !!! (first: %u)\n", special);
         } // donner plutôt tous les special cases // quoique ils sont donnés par nR%u juste en-dessous
 
 
         for(short c=0; c<7; c++){
           unsigned nR3;
           unsigned* R3 = whichEqual(tcase, special_name[c], nrow, &nR3);
-          printf("*** nR%u: %u ***\n", special_name[c], nR3);
           if(nR3 > 0){
+            printf("--- nR%u: %u ---\n", special_name[c], nR3);
             size_t** cubeco3 = GetBasic1(R3, nR3, vivjvk, 999);
             double* values3 = GetBasic2prime(voxel, level, cubeco3, nR3);
             size_t* p13 = malloc(nR3 * sizeof(size_t));
