@@ -18,7 +18,7 @@ Orthocircle:
 
 Bretzel:
 
-![Imgur](https://i.imgur.com/LBi5Yxa.png)
+![Imgur](https://i.imgur.com/I7rzB4Z.png)
 
 Valentine heart:
 
