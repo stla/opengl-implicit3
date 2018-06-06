@@ -1,4 +1,4 @@
-module CubeOctahedron
+module Cyclide
   ( main )
   where
 import           Data.IORef
@@ -20,26 +20,20 @@ data Context = Context
 red :: Color4 GLfloat
 red = Color4 1 0 0 1
 
-fcube :: XYZ -> Double
-fcube (x,y,z) = maximum [abs x, abs y, abs z]
-
-foct :: XYZ -> Double
-foct (x,y,z) = abs x + abs y + abs z
-
-fCO :: Double -> Double -> XYZ -> Double
-fCO a b xyz =
-  aa * foct xyz + bb * fcube xyz
+fun :: Double -> Double -> Double -> XYZ -> Double
+fun a mu c (x,y,z) =
+  sqr(x*x+y*y+z*z-mu*mu+b*b) - 4*sqr(a*x-c*mu) - 4*b*b*y*y
   where
-    aa = 2 * min a 1
-    bb = 2 * min b 1
+    b = sqrt (a*a-c*c)
+    sqr w = w*w
 
-voxel :: Double -> Double -> IO Voxel
-voxel a b = makeVoxel (fCO a b) ((-1.6,1.6),(-1.6,1.6),(-1.6,1.6))
-                      (200, 200, 200)
+voxel :: Double -> Double -> Double -> IO Voxel
+voxel a mu c = makeVoxel (fun a mu c) ((-2.0,1.3),(-1.6,1.6),(-1.0,1.0))
+                      (100, 100, 50)
 
-trianglesCO :: Voxel -> Double -> IO [NTriangle]
-trianglesCO vxl l = do
-  triangles <- computeContour3d'' vxl Nothing l True
+trianglesCy :: Voxel -> IO [NTriangle]
+trianglesCy vxl = do
+  triangles <- computeContour3d'' vxl Nothing 0 True
   return $ map fromTriangle triangles
 
 display :: Context -> DisplayCallback
@@ -72,21 +66,20 @@ resize zoom s@(Size w h) = do
   matrixMode $= Projection
   loadIdentity
   perspective 45.0 (w'/h') 1.0 100.0
-  lookAt (Vertex3 0 0 (-1+zoom)) (Vertex3 0 0 0) (Vector3 0 1 0)
+  lookAt (Vertex3 0 0 (-6+zoom)) (Vertex3 0 0 0) (Vector3 0 1 0)
   matrixMode $= Modelview 0
   where
     w' = realToFrac w
     h' = realToFrac h
 
 keyboard :: IORef GLfloat -> IORef GLfloat -> IORef GLfloat -- rotations
-         -> IORef Double -> IORef Double -- parameters a and b
-         -> IORef Double -- isolevel
+         -> IORef Double -> IORef Double -> IORef Double -- parameters a, mu and c
          -> IORef Voxel
          -> IORef [NTriangle]
          -> IORef Double -- zoom
          -> KeyboardCallback
-keyboard rot1 rot2 rot3 a b l voxelRef trianglesRef zoom c _ = do
-  case c of
+keyboard rot1 rot2 rot3 a mu c voxelRef trianglesRef zoom char _ = do
+  case char of
     'e' -> rot1 $~! subtract 2
     'r' -> rot1 $~! (+ 2)
     't' -> rot2 $~! subtract 2
@@ -97,54 +90,58 @@ keyboard rot1 rot2 rot3 a b l voxelRef trianglesRef zoom c _ = do
     'l' -> zoom $~! subtract 1
     'f' -> do
              a $~! (+ 0.02)
-             b $~! subtract 0.02
              a' <- get a
-             b' <- get b
-             vxl <- voxel a' b'
+             mu' <- get mu
+             c' <- get c
+             vxl <- voxel a' mu' c'
              writeIORef voxelRef vxl
-             l' <- get l
-             triangles <- trianglesCO vxl l'
+             triangles <- trianglesCy vxl
              writeIORef trianglesRef triangles
     'v' -> do
              a $~! subtract 0.02
-             b $~! (+ 0.02)
              a' <- get a
-             b' <- get b
-             vxl <- voxel a' b'
+             mu' <- get mu
+             c' <- get c
+             vxl <- voxel a' mu' c'
              writeIORef voxelRef vxl
-             l' <- get l
-             triangles <- trianglesCO vxl l'
+             triangles <- trianglesCy vxl
              writeIORef trianglesRef triangles
     'g' -> do
-             b $~! (+ 0.03)
-             a' <- get a
-             b' <- get b
-             vxl <- voxel a' b'
-             writeIORef voxelRef vxl
-             l' <- get l
-             triangles <- trianglesCO vxl l'
-             writeIORef trianglesRef triangles
+            a' <- get a
+            mu $~! (+0.02)
+            mu' <- get mu
+            c' <- get c
+            vxl <- voxel a' mu' c'
+            writeIORef voxelRef vxl
+            triangles <- trianglesCy vxl
+            writeIORef trianglesRef triangles
     'b' -> do
-             b $~! subtract 0.03
-             a' <- get a
-             b' <- get b
-             vxl <- voxel a' b'
-             writeIORef voxelRef vxl
-             l' <- get l
-             triangles <- trianglesCO vxl l'
-             writeIORef trianglesRef triangles
+            a' <- get a
+            mu $~! subtract 0.02
+            mu' <- get mu
+            c' <- get c
+            vxl <- voxel a' mu' c'
+            writeIORef voxelRef vxl
+            triangles <- trianglesCy vxl
+            writeIORef trianglesRef triangles
     'h' -> do
-             l $~! (+ 0.25)
-             l' <- get l
-             vxl <- get voxelRef
-             triangles <- trianglesCO vxl l'
-             writeIORef trianglesRef triangles
+            a' <- get a
+            mu' <- get mu
+            c $~! (+0.02)
+            c' <- get c
+            vxl <- voxel a' mu' c'
+            writeIORef voxelRef vxl
+            triangles <- trianglesCy vxl
+            writeIORef trianglesRef triangles
     'n' -> do
-             l $~! subtract 0.25
-             l' <- get l
-             vxl <- get voxelRef
-             triangles <- trianglesCO vxl l'
-             writeIORef trianglesRef triangles
+            a' <- get a
+            mu' <- get mu
+            c $~! subtract 0.02
+            c' <- get c
+            vxl <- voxel a' mu' c'
+            writeIORef voxelRef vxl
+            triangles <- trianglesCy vxl
+            writeIORef trianglesRef triangles
     'q' -> leaveMainLoop
     _   -> return ()
   postRedisplay Nothing
@@ -153,7 +150,7 @@ keyboard rot1 rot2 rot3 a b l voxelRef trianglesRef zoom c _ = do
 main :: IO ()
 main = do
   _ <- getArgsAndInitialize
-  _ <- createWindow "CO surface"
+  _ <- createWindow "Cyclide"
   windowSize $= Size 500 500
   initialDisplayMode $= [RGBAMode, DoubleBuffered, WithDepthBuffer]
   clearColor $= white
@@ -171,12 +168,12 @@ main = do
   rot2 <- newIORef 0.0
   rot3 <- newIORef 0.0
   zoom <- newIORef 0.0
-  a <- newIORef (2/3)
-  b <- newIORef 0.5
-  vxl <- voxel (2/3) 0.5
+  a <- newIORef 0.94
+  mu <- newIORef 0.56
+  c <- newIORef 0.34
+  vxl <- voxel 0.94 0.56 0.34
   voxelRef <- newIORef vxl
-  l <- newIORef 1.0
-  triangles <- trianglesCO vxl 1.0
+  triangles <- trianglesCy vxl
   trianglesRef <- newIORef triangles
   displayCallback $= display Context {contextRot1 = rot1,
                                       contextRot2 = rot2,
@@ -185,16 +182,14 @@ main = do
                                       contextVoxel = voxelRef,
                                       contextTriangles = trianglesRef}
   reshapeCallback $= Just (resize 0)
-  keyboardCallback $= Just (keyboard rot1 rot2 rot3 a b l voxelRef trianglesRef zoom)
+  keyboardCallback $= Just (keyboard rot1 rot2 rot3 a mu c voxelRef trianglesRef zoom)
   idleCallback $= Nothing
-  putStrLn "*** CO surface ***\n\
+  putStrLn "*** Cyclide surface ***\n\
         \    To quit, press q.\n\
         \    Scene rotation:\n\
         \        e, r, t, y, u, i\n\
         \    Zoom: l, m\n\
         \    Increase/decrease parameters:\n\
-        \        f, v, g, b\n\
-        \    Increase/decrease isolevel:\n\
-        \        h, n\n\
+        \        f, v, g, b, h, n\n\
         \"
   mainLoop
