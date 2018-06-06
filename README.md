@@ -47,3 +47,7 @@ Spiral:
 Animated spiral:
 
 ![gfycat](https://thumbs.gfycat.com/DependableCaringHog-size_restricted.gif)
+
+Dupin cyclide:
+
+![Imgur](https://i.imgur.com/nWGi8Fo.png)
