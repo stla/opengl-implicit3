@@ -30,3 +30,4 @@ ppm/*
 !ppm/.nothing
 png/*
 !png/.nothing
+src/Ztest.hs

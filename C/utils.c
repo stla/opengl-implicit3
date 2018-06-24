@@ -138,6 +138,7 @@ unsigned** whichIndicesAndItems(size_t** M, unsigned m, unsigned n, unsigned* ou
     return out;
 }
 
+// not used
 double*** fun2array(double f(unsigned,unsigned,unsigned), unsigned nx, unsigned ny, unsigned nz){
     double*** out = malloc(nx * sizeof(double**));
     for(unsigned i=0; i<nx; i++){
@@ -179,7 +180,8 @@ size_t** kro1(size_t** M, unsigned nx, unsigned ny, size_t n){
 
 size_t** kro2(size_t** M, size_t nx, unsigned ny, unsigned n){
     size_t** out = malloc((nx*n+1) * sizeof(size_t*));
-    unsigned* replicates = malloc((nx*n+1) * sizeof(unsigned));
+//    unsigned* replicates = malloc((nx*n+1) * sizeof(unsigned));
+    unsigned* replicates = malloc((nx*n) * sizeof(unsigned));
     unsigned count = 0;
     for(size_t i=0; i<nx; i++){
         for(unsigned m=0; m<n; m++){
